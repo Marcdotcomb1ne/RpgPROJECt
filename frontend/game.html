@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Status Zero - Jogo</title>
+  <title>Status Zero — Jogo</title>
   <style>
     *,
     *::before,
@@ -34,29 +34,28 @@
       overflow: hidden;
     }
 
-    /* ======================================================
-     Top bar
-     ====================================================== */
+    /* ========== TOP BAR ========== */
     .topbar {
       background: var(--black);
-      border-bottom: 2px solid #333;
-      padding: 8px 16px;
+      border-bottom: 1px solid #333;
+      padding: 6px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      z-index: 10;
     }
 
     .topbar-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 2px;
     }
 
     .topbar-time {
-      font-size: 12px;
-      opacity: 0.6;
+      font-size: 11px;
+      opacity: 0.5;
       letter-spacing: 1px;
       text-transform: uppercase;
     }
@@ -70,47 +69,45 @@
       background: none;
       border: 1px solid #444;
       color: var(--white);
-      padding: 4px 10px;
+      padding: 3px 10px;
       cursor: pointer;
-      transition: border-color 0.1s, color 0.1s;
     }
 
     .back-btn:hover {
       border-color: var(--white);
     }
 
-    /* ======================================================
-     Stats bar
-     ====================================================== */
+    /* ========== STATS BAR ========== */
     .statsbar {
       background: #111;
       border-bottom: var(--border);
-      padding: 8px 16px;
+      padding: 6px 14px;
       display: flex;
-      gap: 16px;
+      gap: 12px;
       flex-shrink: 0;
       overflow-x: auto;
+      z-index: 10;
     }
 
     .stat {
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 56px;
+      min-width: 52px;
     }
 
     .stat-label {
-      font-size: 9px;
+      font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 1px;
       opacity: 0.5;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       white-space: nowrap;
     }
 
     .stat-bar-wrap {
       width: 100%;
-      height: 6px;
+      height: 5px;
       background: #333;
       border: 1px solid #444;
     }
@@ -126,67 +123,308 @@
     }
 
     .stat-value {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
-    /* ======================================================
-     Main layout
-     ====================================================== */
+    /* ========== MAIN LAYOUT ========== */
     .main {
       flex: 1;
       display: flex;
       overflow: hidden;
+      position: relative;
     }
 
-    /* ======================================================
-     Narrative panel
-     ====================================================== */
-    .narrative {
+    /* ========== VISUAL NOVEL SCENE ========== */
+    .vn-scene {
       flex: 1;
+      position: relative;
       display: flex;
       flex-direction: column;
-      border-right: var(--border);
+      overflow: hidden;
     }
 
-    .narrative-log {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      scroll-behavior: smooth;
-      /* thin manga dot overlay */
-      background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
-      background-size: 10px 10px;
+    /* Background layer */
+    .vn-bg {
+      position: absolute;
+      inset: 0;
+      background: #0d0d1a;
+      background-image:
+        linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 50%, #0d0d1a 100%);
+      transition: background-image 0.5s ease;
+      overflow: hidden;
     }
 
-    /* scrollbar */
-    .narrative-log::-webkit-scrollbar {
-      width: 4px;
+    .vn-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
     }
 
-    .narrative-log::-webkit-scrollbar-track {
-      background: #111;
+    .vn-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
     }
 
-    .narrative-log::-webkit-scrollbar-thumb {
-      background: #444;
+    /* Manga dots overlay */
+    .vn-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-image: radial-gradient(circle, #ffffff04 1px, transparent 1px);
+      background-size: 8px 8px;
     }
 
-    .log-entry {
-      margin-bottom: 20px;
-      animation: fadeIn 0.3s ease;
+    /* Character sprites area */
+    .vn-chars {
+      position: absolute;
+      bottom: 200px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0;
+      z-index: 2;
+      pointer-events: none;
     }
 
-    @keyframes fadeIn {
+    .vn-char {
+      position: relative;
+      width: 180px;
+      height: 280px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      animation: charAppear 0.3s ease;
+      transition: filter 0.3s;
+    }
+
+    .vn-char img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.8));
+    }
+
+    .vn-char .char-placeholder {
+      width: 120px;
+      height: 240px;
+      background: linear-gradient(to bottom, #333, #111);
+      border: 2px solid #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      text-align: center;
+      opacity: 0.5;
+      padding: 8px;
+    }
+
+    @keyframes charAppear {
       from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(20px);
       }
 
       to {
         opacity: 1;
         transform: none;
+      }
+    }
+
+    /* Dialogue Box */
+    .vn-dialogbox {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      background: rgba(10, 10, 10, 0.92);
+      border-top: 2px solid #333;
+      backdrop-filter: blur(4px);
+    }
+
+    /* History toggle */
+    .history-toggle {
+      position: absolute;
+      top: -30px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid #444;
+      font-family: var(--font);
+      font-size: 10px;
+      color: #aaa;
+      padding: 3px 10px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .history-toggle:hover {
+      color: var(--white);
+      border-color: var(--white);
+    }
+
+    /* Current narration display */
+    .vn-narration {
+      padding: 14px 18px 4px;
+      min-height: 80px;
+      max-height: 130px;
+      overflow-y: auto;
+    }
+
+    .vn-narration::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .vn-narration::-webkit-scrollbar-thumb {
+      background: #333;
+    }
+
+    .vn-speaker-name {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+
+    .vn-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--white);
+    }
+
+    .vn-text.typing::after {
+      content: '▌';
+      animation: blink 0.7s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Input area */
+    .vn-input {
+      padding: 10px 14px 12px;
+      border-top: 1px solid #222;
+    }
+
+    .input-hint {
+      font-size: 10px;
+      opacity: 0.35;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row textarea {
+      flex: 1;
+      font-family: var(--font);
+      font-size: 13px;
+      background: #1a1a1a;
+      color: var(--white);
+      border: var(--border);
+      padding: 8px 10px;
+      resize: none;
+      height: 52px;
+      outline: none;
+      line-height: 1.4;
+    }
+
+    .input-row textarea:focus {
+      border-color: #555;
+    }
+
+    .send-btn {
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: var(--white);
+      color: var(--black);
+      border: var(--border);
+      padding: 0 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .send-btn:hover {
+      background: var(--red);
+      color: var(--white);
+      border-color: var(--red);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    /* ========== LOG OVERLAY (history) ========== */
+    .vn-log-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.95);
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .vn-log-overlay.open {
+      display: block;
+    }
+
+    .log-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      font-family: var(--font);
+      font-size: 11px;
+      background: #222;
+      border: 1px solid #444;
+      color: var(--white);
+      padding: 3px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .log-entry {
+      margin-bottom: 14px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
       }
     }
 
@@ -196,12 +434,11 @@
 
     .log-bubble {
       display: inline-block;
-      max-width: 85%;
-      padding: 10px 14px;
+      max-width: 90%;
+      padding: 8px 12px;
       border: var(--border);
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.5;
-      position: relative;
     }
 
     .log-bubble.narration {
@@ -220,161 +457,110 @@
       background: var(--red);
       color: var(--white);
       font-weight: bold;
-      text-transform: uppercase;
-      font-size: 12px;
+      font-size: 11px;
       letter-spacing: 1px;
-      border-color: var(--red);
-      width: 100%;
       text-align: center;
+      width: 100%;
     }
 
     .log-bubble.system-text {
       background: #222;
       color: #888;
-      font-size: 12px;
+      font-size: 11px;
       font-style: italic;
-      border-color: #333;
       text-align: center;
       width: 100%;
     }
 
-    /* ======================================================
-     Input area
-     ====================================================== */
-    .input-area {
-      border-top: var(--border);
-      padding: 12px 16px;
-      background: #0d0d0d;
-      flex-shrink: 0;
-    }
-
-    .input-hint {
-      font-size: 11px;
-      opacity: 0.4;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .input-row textarea {
-      flex: 1;
-      font-family: var(--font);
-      font-size: 14px;
-      background: #1a1a1a;
-      color: var(--white);
-      border: var(--border);
-      padding: 10px 12px;
-      resize: none;
-      height: 64px;
-      outline: none;
-      line-height: 1.4;
-    }
-
-    .input-row textarea:focus {
-      border-color: #666;
-    }
-
-    .send-btn {
-      font-family: var(--font);
-      font-size: 13px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      background: var(--white);
-      color: var(--black);
-      border: var(--border);
-      padding: 0 18px;
-      cursor: pointer;
-      transition: background 0.1s, color 0.1s;
-      flex-shrink: 0;
-    }
-
-    .send-btn:hover {
-      background: var(--red);
-      color: var(--white);
-      border-color: var(--red);
-    }
-
-    .send-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-
-    /* ======================================================
-     Side panel (arcs + info)
-     ====================================================== */
+    /* ========== SIDEBAR ========== */
     .sidebar {
-      width: 220px;
+      width: 200px;
       display: flex;
       flex-direction: column;
-      background: #0d0d0d;
+      background: #0a0a0a;
+      border-left: 1px solid #222;
       flex-shrink: 0;
       overflow: hidden;
+      z-index: 5;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 700px) {
       .sidebar {
         display: none;
       }
     }
 
     .sidebar-section {
-      border-bottom: var(--border);
-      padding: 12px;
+      border-bottom: 1px solid #222;
+      padding: 10px;
     }
 
     .sidebar-label {
-      font-size: 9px;
+      font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 2px;
       opacity: 0.4;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .arc-entry {
-      font-size: 12px;
-      padding: 6px 8px;
+      font-size: 11px;
+      padding: 5px 7px;
       border: 1px solid #333;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       line-height: 1.3;
     }
 
     .arc-entry.active {
       border-color: var(--red);
-      color: var(--white);
     }
 
     .arc-entry.closed {
-      opacity: 0.4;
+      opacity: 0.35;
     }
 
     .arc-name {
       font-weight: bold;
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .arc-days {
-      font-size: 10px;
+      font-size: 9px;
       opacity: 0.5;
     }
 
     .sidebar-arcs {
       flex: 1;
       overflow-y: auto;
-      padding: 12px;
+      padding: 10px;
     }
 
     .sidebar-arcs::-webkit-scrollbar {
-      width: 3px;
+      width: 2px;
     }
 
     .sidebar-arcs::-webkit-scrollbar-thumb {
       background: #333;
+    }
+
+    /* Relationships panel */
+    .rel-entry {
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      padding: 3px 5px;
+      border: 1px solid #222;
+    }
+
+    .rel-name {
+      font-weight: bold;
+    }
+
+    .rel-status {
+      opacity: 0.6;
+      font-size: 9px;
     }
   </style>
 </head>
@@ -385,7 +571,7 @@
   <div class="topbar">
     <button class="back-btn" onclick="goBack()">Sair</button>
     <div class="topbar-title" id="slot-title">Carregando...</div>
-    <div class="topbar-time" id="time-display">Dia 1 - Manha</div>
+    <div class="topbar-time" id="time-display">Dia 1 — Manhã</div>
   </div>
 
   <!-- Stats bar -->
@@ -398,14 +584,14 @@
       <div class="stat-value" id="val-sanity">100</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Confianca</div>
+      <div class="stat-label">Confiança</div>
       <div class="stat-bar-wrap">
         <div class="stat-bar-fill" id="bar-confidence" style="width:50%"></div>
       </div>
       <div class="stat-value" id="val-confidence">50</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Violencia</div>
+      <div class="stat-label">Violência</div>
       <div class="stat-bar-wrap">
         <div class="stat-bar-fill red" id="bar-violence" style="width:0%"></div>
       </div>
@@ -430,15 +616,39 @@
   <!-- Main -->
   <div class="main">
 
-    <!-- Narrative -->
-    <div class="narrative">
-      <div class="narrative-log" id="log"></div>
-      <div class="input-area">
-        <div class="input-hint">Use "fala entre aspas" e *acao entre asteriscos*</div>
-        <div class="input-row">
-          <textarea id="inp-action" placeholder='"Ei, o que voce quer?" *olha para os lados com cautela*'
-            onkeydown="handleKey(event)"></textarea>
-          <button class="send-btn" id="send-btn" onclick="sendAction()">Enviar</button>
+    <!-- VN Scene -->
+    <div class="vn-scene">
+
+      <!-- Background -->
+      <div class="vn-bg" id="vn-bg">
+        <img id="bg-img" src="" alt="" style="display:none" />
+      </div>
+
+      <!-- Characters -->
+      <div class="vn-chars" id="vn-chars"></div>
+
+      <!-- Log Overlay -->
+      <div class="vn-log-overlay" id="log-overlay">
+        <button class="log-close" onclick="toggleLog()">✕ Fechar</button>
+        <div id="log-content"></div>
+      </div>
+
+      <!-- Dialog Box -->
+      <div class="vn-dialogbox">
+        <button class="history-toggle" onclick="toggleLog()">Histórico</button>
+
+        <div class="vn-narration" id="vn-narration">
+          <div class="vn-speaker-name" id="vn-speaker">NARRADOR</div>
+          <div class="vn-text" id="vn-text">Carregando...</div>
+        </div>
+
+        <div class="vn-input">
+          <div class="input-hint">Use "fala entre aspas" e *ação entre asteriscos*</div>
+          <div class="input-row">
+            <textarea id="inp-action" placeholder='"Ei, o que você quer?" *olha para os lados*'
+              onkeydown="handleKey(event)"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendAction()">▶</button>
+          </div>
         </div>
       </div>
     </div>
@@ -446,39 +656,34 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-section">
-        <div class="sidebar-label">Memoria</div>
-        <div id="memory-text" style="font-size:12px;opacity:0.6;font-style:italic;line-height:1.4">
-          Sem resumo ainda.
+        <div class="sidebar-label">Memória</div>
+        <div id="memory-text" style="font-size:11px;opacity:0.5;font-style:italic;line-height:1.4">Sem resumo ainda.
         </div>
       </div>
-      <div class="sidebar-label" style="padding:12px 12px 4px">Arcos</div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Relacionamentos</div>
+        <div id="rels-list" style="font-size:11px;opacity:0.4;font-style:italic">Nenhum ainda.</div>
+      </div>
+      <div class="sidebar-label" style="padding:10px 10px 4px">Arcos Narrativos</div>
       <div class="sidebar-arcs" id="arcs-list">
-        <div style="font-size:12px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>
+        <div style="font-size:11px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>
       </div>
     </div>
 
   </div>
 
   <script>
-    // ============================================================
-    // Config - mesmo valor do index.html
-    // ============================================================
     const API_BASE = "http://localhost:8000";
-
-    // ============================================================
-    // State - carregado do sessionStorage (preenchido pelo index.html)
-    // ============================================================
     let slotId = sessionStorage.getItem("slot_id");
     let authToken = sessionStorage.getItem("auth_token");
+    let logOpen = false;
+    let allEvents = [];
 
     // ============================================================
     // Boot
     // ============================================================
     window.addEventListener("DOMContentLoaded", async () => {
-      if (!slotId || !authToken) {
-        window.location.href = "index.html";
-        return;
-      }
+      if (!slotId || !authToken) { window.location.href = "index.html"; return; }
       await loadSlot();
       await loadHistory();
       await loadArcs();
@@ -487,25 +692,15 @@
     async function api(method, path, body = null) {
       const opts = {
         method,
-        headers: {
-          "Authorization": `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Authorization": `Bearer ${authToken}`, "Content-Type": "application/json" },
       };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(`${API_BASE}${path}`, opts);
-
-      // Token expirado: redireciona para login sem travar o jogo
       if (res.status === 401) {
-        appendLog("system", "Sessao expirada. Redirecionando para o login...");
-        setTimeout(() => {
-          sessionStorage.removeItem("slot_id");
-          sessionStorage.removeItem("auth_token");
-          window.location.href = "index.html";
-        }, 2000);
+        setNarration("SISTEMA", "Sessão expirada. Redirecionando...");
+        setTimeout(() => { sessionStorage.clear(); window.location.href = "index.html"; }, 2000);
         throw new Error("Sessao expirada");
       }
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Erro");
       return data;
@@ -515,25 +710,35 @@
       try {
         const slot = await api("GET", `/slots/${slotId}`);
         document.getElementById("slot-title").textContent = slot.title;
-        updateStats(slot.world_state);
-        updateTime(slot.world_state.current_day, slot.world_state.current_phase);
-        if (slot.memory_summary) {
-          document.getElementById("memory-text").textContent = slot.memory_summary;
+        const ws = slot.world_state || {};
+        updateStats(ws);
+        updateTime(ws.current_day || 1, ws.current_phase || "morning");
+        updateRelationships(ws.relationships || {});
+        if (slot.memory_summary) document.getElementById("memory-text").textContent = slot.memory_summary;
+        if (ws.current_background) trySetBackground(ws.current_background, ws);
+        if (ws.active_characters && ws.active_characters.length) {
+          // Characters without image URLs on first load
+          renderCharPlaceholders(ws.active_characters);
         }
       } catch (err) {
-        if (err.message !== "Sessao expirada") {
-          appendLog("system", `Erro ao carregar slot: ${err.message}`);
-        }
+        if (err.message !== "Sessao expirada") setNarration("SISTEMA", `Erro ao carregar slot: ${err.message}`);
       }
     }
 
     async function loadHistory() {
       try {
-        const events = await api("GET", `/slots/${slotId}/history?limit=60`);
-        for (const ev of events) {
-          appendLog(ev.type, ev.content, false);
+        const events = await api("GET", `/slots/${slotId}/history?limit=80`);
+        allEvents = events;
+        renderLogContent();
+
+        // Show last narration in the dialog box
+        const narrations = events.filter(e => e.type === "narration");
+        if (narrations.length) {
+          const last = narrations[narrations.length - 1];
+          setNarration("NARRADOR", last.content);
+        } else {
+          setNarration("NARRADOR", "A história começa aqui. O que você faz?");
         }
-        scrollLog();
       } catch (_) { }
     }
 
@@ -545,127 +750,218 @@
     }
 
     // ============================================================
-    // Action
+    // Send Action
     // ============================================================
     async function sendAction() {
       const textarea = document.getElementById("inp-action");
       const raw = textarea.value.trim();
       if (!raw) return;
-
       setSending(true);
       textarea.value = "";
 
-      appendLog("player_action", raw);
+      // Immediately show player action in log
+      addEventToLog({ type: "player_action", content: raw, id: Date.now() + "p" });
+
+      // Show "thinking" state
+      setNarration("...", "");
+      document.getElementById("vn-text").classList.add("typing");
 
       try {
         const result = await api("POST", `/slots/${slotId}/action`, { input: raw });
-        appendLog("narration", result.narration);
+
+        document.getElementById("vn-text").classList.remove("typing");
+
+        // Update visual novel scene
+        setNarration("NARRADOR", result.narration);
         updateStats(result.world_state);
         updateTime(result.current_day, result.current_phase);
+        updateRelationships(result.world_state?.relationships || {});
+
+        // Update background if AI suggested one
+        if (result.current_background_url) {
+          setBgImage(result.current_background_url);
+        }
+
+        // Update characters
+        if (result.active_characters && result.active_characters.length) {
+          renderCharacters(result.active_characters);
+        }
+
+        if (result.world_state?.memory_summary) {
+          document.getElementById("memory-text").textContent = result.world_state.memory_summary;
+        }
+
+        addEventToLog({ type: "narration", content: result.narration, id: Date.now() + "n" });
         await loadArcs();
       } catch (err) {
+        document.getElementById("vn-text").classList.remove("typing");
         if (err.message !== "Sessao expirada") {
-          appendLog("system", `Erro: ${err.message}`);
+          setNarration("SISTEMA", `Erro: ${err.message}`);
+          addEventToLog({ type: "system", content: `Erro: ${err.message}`, id: Date.now() });
         }
       } finally {
         setSending(false);
-        scrollLog();
       }
     }
 
     function handleKey(e) {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendAction();
-      }
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAction(); }
     }
 
     // ============================================================
-    // UI
+    // Visual Novel UI
     // ============================================================
 
-    function appendLog(type, content, animate = true) {
-      const log = document.getElementById("log");
-      const entry = document.createElement("div");
-      entry.className = "log-entry" + (type === "player_action" ? " player" : "");
+    let typingTimeout = null;
+    function setNarration(speaker, text) {
+      document.getElementById("vn-speaker").textContent = speaker;
+      document.getElementById("vn-text").textContent = text;
+    }
 
-      const bubble = document.createElement("div");
+    function setBgImage(url) {
+      const img = document.getElementById("bg-img");
+      if (url) { img.src = url; img.style.display = "block"; }
+      else { img.style.display = "none"; }
+    }
 
-      if (type === "player_action") {
-        bubble.className = "log-bubble player-text";
-      } else if (type === "arc_event") {
-        bubble.className = "log-bubble arc-event";
-      } else if (type === "system") {
-        bubble.className = "log-bubble system-text";
-      } else {
-        bubble.className = "log-bubble narration";
+    function trySetBackground(bgName, ws) {
+      // No URL on load from slot - background will be set when AI responds
+    }
+
+    function renderCharacters(chars) {
+      const area = document.getElementById("vn-chars");
+      area.innerHTML = "";
+      chars.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "vn-char";
+        if (c.image_url) {
+          const img = document.createElement("img");
+          img.src = c.image_url;
+          img.alt = c.name;
+          img.onerror = () => { div.innerHTML = `<div class="char-placeholder">${escHtml(c.name)}</div>`; };
+          div.appendChild(img);
+        } else {
+          div.innerHTML = `<div class="char-placeholder">${escHtml(c.name || "?")}</div>`;
+        }
+        area.appendChild(div);
+      });
+    }
+
+    function renderCharPlaceholders(names) {
+      const area = document.getElementById("vn-chars");
+      area.innerHTML = "";
+      names.forEach(name => {
+        const div = document.createElement("div");
+        div.className = "vn-char";
+        div.innerHTML = `<div class="char-placeholder">${escHtml(name)}</div>`;
+        area.appendChild(div);
+      });
+    }
+
+    // ============================================================
+    // Log overlay
+    // ============================================================
+
+    function toggleLog() {
+      logOpen = !logOpen;
+      document.getElementById("log-overlay").classList.toggle("open", logOpen);
+      if (logOpen) renderLogContent();
+    }
+
+    function addEventToLog(ev) {
+      allEvents.push(ev);
+      if (logOpen) renderLogContent();
+    }
+
+    function renderLogContent() {
+      const container = document.getElementById("log-content");
+      container.innerHTML = "";
+      for (const ev of allEvents) {
+        const entry = document.createElement("div");
+        entry.className = "log-entry" + (ev.type === "player_action" ? " player" : "");
+        const bubble = document.createElement("div");
+        if (ev.type === "player_action") bubble.className = "log-bubble player-text";
+        else if (ev.type === "arc_event") bubble.className = "log-bubble arc-event";
+        else if (ev.type === "system") bubble.className = "log-bubble system-text";
+        else bubble.className = "log-bubble narration";
+        bubble.textContent = ev.content;
+        entry.appendChild(bubble);
+        container.appendChild(entry);
       }
-
-      bubble.textContent = content;
-      entry.appendChild(bubble);
-
-      if (!animate) entry.style.animation = "none";
-      log.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
     }
 
-    function scrollLog() {
-      const log = document.getElementById("log");
-      log.scrollTop = log.scrollHeight;
-    }
+    // ============================================================
+    // Stats
+    // ============================================================
 
     function updateStats(ws) {
       if (!ws) return;
       setBar("sanity", ws.sanity, 100);
       setBar("confidence", ws.confidence, 100);
       setBar("violence", ws.violence, 100);
-      // social_status vai de -100 a 100, normaliza para 0-100 na barra
-      setBar("social", ws.social_status + 100, 200);
-      document.getElementById("val-social").textContent = ws.social_status;
+      setBar("social", (ws.social_status || 0) + 100, 200);
+      document.getElementById("val-social").textContent = ws.social_status || 0;
       setBar("meta", ws.meta_awareness, 100);
     }
 
     function setBar(key, value, max) {
-      const pct = Math.max(0, Math.min(100, (value / max) * 100));
+      const pct = Math.max(0, Math.min(100, ((value || 0) / max) * 100));
       const fill = document.getElementById(`bar-${key}`);
       const val = document.getElementById(`val-${key}`);
       if (fill) fill.style.width = pct + "%";
-      if (val && key !== "social") val.textContent = value;
+      if (val && key !== "social") val.textContent = value || 0;
     }
 
-    const phaseNames = { morning: "Manha", afternoon: "Tarde", night: "Noite" };
-
+    const phaseNames = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
     function updateTime(day, phase) {
-      document.getElementById("time-display").textContent =
-        `Dia ${day} - ${phaseNames[phase] || phase}`;
+      document.getElementById("time-display").textContent = `Dia ${day} — ${phaseNames[phase] || phase}`;
+    }
+
+    function updateRelationships(rels) {
+      const el = document.getElementById("rels-list");
+      const entries = Object.entries(rels || {});
+      if (!entries.length) {
+        el.innerHTML = '<span style="font-size:11px;opacity:0.4;font-style:italic">Nenhum ainda.</span>';
+        return;
+      }
+      el.innerHTML = entries.map(([name, data]) => {
+        const info = typeof data === "object" ? data : {};
+        const aff = info.affinity || 0;
+        const color = aff > 20 ? "#5af" : aff < -20 ? "#f55" : "#aaa";
+        return `<div class="rel-entry">
+          <span class="rel-name">${escHtml(name)}</span>
+          <span class="rel-status" style="color:${color}">${info.status || "?"} (${aff > 0 ? "+" : ""}${aff})</span>
+        </div>`;
+      }).join("");
     }
 
     function renderArcs(arcs) {
       const el = document.getElementById("arcs-list");
       if (!arcs.length) {
-        el.innerHTML = '<div style="font-size:12px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>';
+        el.innerHTML = '<div style="font-size:11px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>';
         return;
       }
       el.innerHTML = arcs.map(a => `
-    <div class="arc-entry ${a.status}">
-      <span class="arc-name">${escHtml(a.title)}</span>
-      <span class="arc-days">Dia ${a.start_day}${a.end_day ? " - " + a.end_day : " (ativo)"}</span>
-    </div>
-  `).join("");
+        <div class="arc-entry ${a.status}">
+          <span class="arc-name">${escHtml(a.title)}</span>
+          <span class="arc-days">Dia ${a.start_day}${a.end_day ? " — " + a.end_day : " (ativo)"}</span>
+        </div>`).join("");
     }
+
+    // ============================================================
+    // Helpers
+    // ============================================================
 
     function setSending(loading) {
       const btn = document.getElementById("send-btn");
       const ta = document.getElementById("inp-action");
-      btn.disabled = loading;
-      ta.disabled = loading;
-      btn.textContent = loading ? "..." : "Enviar";
+      btn.disabled = loading; ta.disabled = loading;
+      btn.textContent = loading ? "..." : "▶";
     }
-
-    function goBack() {
-      window.location.href = "index.html";
-    }
-
+    function goBack() { window.location.href = "index.html"; }
     function escHtml(str) {
+      if (!str) return "";
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
   </script>

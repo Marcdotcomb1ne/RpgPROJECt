@@ -4,11 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RPG Manhwa</title>
+  <title>Status Zero — RPG Manhwa</title>
   <style>
-    /* ======================================================
-     Base
-     ====================================================== */
     *,
     *::before,
     *::after {
@@ -37,16 +34,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      /* manga screen tone background */
-      background-image:
-        radial-gradient(circle, #00000008 1px, transparent 1px);
+      background-image: radial-gradient(circle, #00000008 1px, transparent 1px);
       background-size: 8px 8px;
       overflow-x: hidden;
     }
 
-    /* ======================================================
-     Speed lines decoration
-     ====================================================== */
     .speed-lines {
       position: fixed;
       top: 50%;
@@ -58,74 +50,43 @@
       z-index: 0;
       opacity: 0.04;
       background: conic-gradient(from 0deg at 50% 50%,
-          #000 0deg 1deg, transparent 1deg 7deg,
-          #000 7deg 8deg, transparent 8deg 14deg,
-          #000 14deg 15deg, transparent 15deg 21deg,
-          #000 21deg 22deg, transparent 22deg 28deg,
-          #000 28deg 29deg, transparent 29deg 35deg,
-          #000 35deg 36deg, transparent 36deg 42deg,
-          #000 42deg 43deg, transparent 43deg 49deg,
-          #000 49deg 50deg, transparent 50deg 56deg,
-          #000 56deg 57deg, transparent 57deg 63deg,
-          #000 63deg 64deg, transparent 64deg 70deg,
-          #000 70deg 71deg, transparent 71deg 77deg,
-          #000 77deg 78deg, transparent 78deg 84deg,
-          #000 84deg 85deg, transparent 85deg 91deg,
-          #000 91deg 92deg, transparent 92deg 98deg,
-          #000 98deg 99deg, transparent 99deg 105deg,
-          #000 105deg 106deg, transparent 106deg 112deg,
-          #000 112deg 113deg, transparent 113deg 119deg,
-          #000 119deg 120deg, transparent 120deg 126deg,
-          #000 126deg 127deg, transparent 127deg 133deg,
-          #000 133deg 134deg, transparent 134deg 140deg,
-          #000 140deg 141deg, transparent 141deg 147deg,
-          #000 147deg 148deg, transparent 148deg 154deg,
-          #000 154deg 155deg, transparent 155deg 161deg,
-          #000 161deg 162deg, transparent 162deg 168deg,
-          #000 168deg 169deg, transparent 169deg 175deg,
-          #000 175deg 176deg, transparent 176deg 182deg,
-          #000 182deg 183deg, transparent 183deg 189deg,
-          #000 189deg 190deg, transparent 190deg 196deg,
-          #000 196deg 197deg, transparent 197deg 203deg,
-          #000 203deg 204deg, transparent 204deg 210deg,
-          #000 210deg 211deg, transparent 211deg 217deg,
-          #000 217deg 218deg, transparent 218deg 224deg,
-          #000 224deg 225deg, transparent 225deg 231deg,
-          #000 231deg 232deg, transparent 232deg 238deg,
-          #000 238deg 239deg, transparent 239deg 245deg,
-          #000 245deg 246deg, transparent 246deg 252deg,
-          #000 252deg 253deg, transparent 253deg 259deg,
-          #000 259deg 260deg, transparent 260deg 266deg,
-          #000 266deg 267deg, transparent 267deg 273deg,
-          #000 273deg 274deg, transparent 274deg 280deg,
-          #000 280deg 281deg, transparent 281deg 287deg,
-          #000 287deg 288deg, transparent 288deg 294deg,
-          #000 294deg 295deg, transparent 295deg 301deg,
-          #000 301deg 302deg, transparent 302deg 308deg,
-          #000 308deg 309deg, transparent 309deg 315deg,
-          #000 315deg 316deg, transparent 316deg 322deg,
-          #000 322deg 323deg, transparent 323deg 329deg,
-          #000 329deg 330deg, transparent 330deg 336deg,
-          #000 336deg 337deg, transparent 337deg 343deg,
-          #000 343deg 344deg, transparent 344deg 350deg,
-          #000 350deg 351deg, transparent 351deg 357deg,
-          #000 357deg 358deg, transparent 358deg 360deg);
+          #000 0deg 1deg, transparent 1deg 7deg, #000 7deg 8deg, transparent 8deg 14deg,
+          #000 14deg 15deg, transparent 15deg 21deg, #000 21deg 22deg, transparent 22deg 28deg,
+          #000 28deg 29deg, transparent 29deg 35deg, #000 35deg 36deg, transparent 36deg 42deg,
+          #000 42deg 43deg, transparent 43deg 49deg, #000 49deg 50deg, transparent 50deg 56deg,
+          #000 56deg 57deg, transparent 57deg 63deg, #000 63deg 64deg, transparent 64deg 70deg,
+          #000 70deg 71deg, transparent 71deg 77deg, #000 77deg 78deg, transparent 78deg 84deg,
+          #000 84deg 85deg, transparent 85deg 91deg, #000 91deg 92deg, transparent 92deg 98deg,
+          #000 98deg 99deg, transparent 99deg 105deg, #000 105deg 106deg, transparent 106deg 112deg,
+          #000 112deg 113deg, transparent 113deg 119deg, #000 119deg 120deg, transparent 120deg 126deg,
+          #000 126deg 127deg, transparent 127deg 133deg, #000 133deg 134deg, transparent 134deg 140deg,
+          #000 140deg 141deg, transparent 141deg 147deg, #000 147deg 148deg, transparent 148deg 154deg,
+          #000 154deg 155deg, transparent 155deg 161deg, #000 161deg 162deg, transparent 162deg 168deg,
+          #000 168deg 169deg, transparent 169deg 175deg, #000 175deg 176deg, transparent 176deg 182deg,
+          #000 182deg 183deg, transparent 183deg 189deg, #000 189deg 190deg, transparent 190deg 196deg,
+          #000 196deg 197deg, transparent 197deg 203deg, #000 203deg 204deg, transparent 204deg 210deg,
+          #000 210deg 211deg, transparent 211deg 217deg, #000 217deg 218deg, transparent 218deg 224deg,
+          #000 224deg 225deg, transparent 225deg 231deg, #000 231deg 232deg, transparent 232deg 238deg,
+          #000 238deg 239deg, transparent 239deg 245deg, #000 245deg 246deg, transparent 246deg 252deg,
+          #000 252deg 253deg, transparent 253deg 259deg, #000 259deg 260deg, transparent 260deg 266deg,
+          #000 266deg 267deg, transparent 267deg 273deg, #000 273deg 274deg, transparent 274deg 280deg,
+          #000 280deg 281deg, transparent 281deg 287deg, #000 287deg 288deg, transparent 288deg 294deg,
+          #000 294deg 295deg, transparent 295deg 301deg, #000 301deg 302deg, transparent 302deg 308deg,
+          #000 308deg 309deg, transparent 309deg 315deg, #000 315deg 316deg, transparent 316deg 322deg,
+          #000 322deg 323deg, transparent 323deg 329deg, #000 329deg 330deg, transparent 330deg 336deg,
+          #000 336deg 337deg, transparent 337deg 343deg, #000 343deg 344deg, transparent 344deg 350deg,
+          #000 350deg 351deg, transparent 351deg 360deg);
     }
 
-    /* ======================================================
-     Layout
-     ====================================================== */
     .app {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
       padding: 24px 16px;
     }
 
-    /* ======================================================
-     Header
-     ====================================================== */
+    /* Header */
     .header {
       text-align: center;
       margin-bottom: 32px;
@@ -175,9 +136,7 @@
       font-style: italic;
     }
 
-    /* ======================================================
-     Panels (comic book style)
-     ====================================================== */
+    /* Panel */
     .panel {
       background: var(--panel);
       border: var(--border);
@@ -201,9 +160,7 @@
       border: 2px solid var(--black);
     }
 
-    /* ======================================================
-     Form elements
-     ====================================================== */
+    /* Form */
     .field {
       margin-bottom: 16px;
     }
@@ -229,6 +186,23 @@
     }
 
     .field input:focus {
+      box-shadow: var(--shadow);
+    }
+
+    .field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      font-family: var(--font);
+      font-size: 13px;
+      background: var(--white);
+      border: var(--border);
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      transition: box-shadow 0.1s;
+    }
+
+    .field textarea:focus {
       box-shadow: var(--shadow);
     }
 
@@ -263,6 +237,14 @@
       margin-top: 10px;
     }
 
+    .btn-sm {
+      display: inline-block;
+      width: auto;
+      padding: 6px 14px;
+      font-size: 12px;
+      box-shadow: 3px 3px 0 var(--black);
+    }
+
     .btn-danger {
       background: var(--red);
       color: var(--white);
@@ -284,9 +266,7 @@
       color: var(--red);
     }
 
-    /* ======================================================
-     Error / Info messages
-     ====================================================== */
+    /* Messages */
     .msg {
       padding: 10px 14px;
       border: 2px solid var(--black);
@@ -305,10 +285,9 @@
       color: var(--white);
     }
 
-    /* ======================================================
-     Slots screen
-     ====================================================== */
-    #screen-slots {
+    /* Slots screen */
+    #screen-slots,
+    #screen-pack-select {
       display: none;
     }
 
@@ -335,7 +314,6 @@
       border: 2px solid var(--black);
       padding: 4px 10px;
       cursor: pointer;
-      transition: background 0.1s, color 0.1s;
     }
 
     .logout-btn:hover {
@@ -350,7 +328,6 @@
       margin-bottom: 14px;
       display: flex;
       align-items: stretch;
-      position: relative;
       min-height: 72px;
     }
 
@@ -387,6 +364,16 @@
       letter-spacing: 1px;
     }
 
+    .slot-pack-tag {
+      display: inline-block;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 10px;
+      padding: 1px 6px;
+      margin-top: 3px;
+      letter-spacing: 1px;
+    }
+
     .slot-empty .slot-title {
       opacity: 0.4;
       font-style: italic;
@@ -409,7 +396,6 @@
       padding: 0 14px;
       flex: 1;
       background: none;
-      transition: background 0.1s, color 0.1s;
     }
 
     .slot-btn:not(:last-child) {
@@ -426,9 +412,75 @@
       color: var(--white);
     }
 
-    /* ======================================================
-     Spinner (minimal)
-     ====================================================== */
+    /* Pack select screen */
+    .pack-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .pack-card {
+      border: 2px solid var(--black);
+      background: var(--white);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.1s;
+      position: relative;
+    }
+
+    .pack-card:hover,
+    .pack-card.selected {
+      background: var(--black);
+      color: var(--white);
+      box-shadow: 3px 3px 0 var(--red);
+    }
+
+    .pack-card-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .pack-card-tone {
+      font-size: 10px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .pack-card-concept {
+      font-size: 11px;
+      margin-top: 6px;
+      line-height: 1.3;
+      opacity: 0.8;
+    }
+
+    .pack-card.selected .pack-card-concept {
+      opacity: 0.8;
+    }
+
+    .pack-none-card {
+      border: 2px dashed #aaa;
+      background: transparent;
+      padding: 12px;
+      cursor: pointer;
+      text-align: center;
+      color: #777;
+    }
+
+    .pack-none-card:hover {
+      border-color: var(--black);
+      color: var(--black);
+    }
+
+    .pack-none-card.selected {
+      border: 2px solid var(--black);
+      color: var(--black);
+      background: #f0f0f0;
+    }
+
+    /* Spinner */
     .spinner {
       display: inline-block;
       width: 16px;
@@ -447,9 +499,6 @@
       }
     }
 
-    /* ======================================================
-     User badge
-     ====================================================== */
     .user-badge {
       font-size: 12px;
       background: var(--ink);
@@ -459,46 +508,75 @@
       margin-bottom: 6px;
       letter-spacing: 1px;
     }
+
+    /* Tabs on slots screen */
+    .tab-row {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border: var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .tab-btn.active {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .tab-btn:not(:last-child) {
+      border-right: 2px solid var(--black);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
   </style>
 </head>
 
 <body>
 
   <div class="speed-lines"></div>
-
   <div class="app">
 
-    <!-- ======================================================
-       Auth Screen
-       ====================================================== -->
+    <!-- Auth Screen -->
     <div id="screen-auth">
       <div class="header">
         <div class="header-label">Visual Novel RPG</div>
-        <h1>
-          Status<span class="title-red">Zero</span>
-        </h1>
-        <p class="header-sub">A historia é sua. ou quase isso.</p>
+        <h1>Status<span class="title-red">Zero</span></h1>
+        <p class="header-sub">A história é sua. ou quase isso.</p>
       </div>
-
       <div class="panel" id="auth-panel">
         <span class="panel-label" id="auth-panel-label">Entrar</span>
         <div id="auth-msg" style="display:none" class="msg"></div>
-
         <div class="field">
           <label for="inp-email">Email</label>
           <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email" />
         </div>
-
         <div class="field" id="field-username" style="display:none">
           <label for="inp-username">Username</label>
           <input type="text" id="inp-username" placeholder="como te chamam" autocomplete="username" />
         </div>
-
         <div class="field">
           <label for="inp-password">Senha</label>
           <input type="password" id="inp-password" placeholder="sua senha" autocomplete="current-password" />
         </div>
-
         <button class="btn btn-primary" id="btn-auth" onclick="handleAuth()">Entrar</button>
         <div class="toggle-link">
           <span id="toggle-auth" onclick="toggleAuthMode()">Cadastre-se</span>
@@ -506,9 +584,7 @@
       </div>
     </div>
 
-    <!-- ======================================================
-       Slots Screen
-       ====================================================== -->
+    <!-- Slots Screen -->
     <div id="screen-slots">
       <div class="slots-header">
         <div>
@@ -518,46 +594,101 @@
         <button class="logout-btn" onclick="logout()">Sair</button>
       </div>
 
-      <div id="slots-msg" style="display:none" class="msg"></div>
-      <div id="slots-list"></div>
+      <!-- Tabs: Saves | Criar Mundo -->
+      <div class="tab-row">
+        <button class="tab-btn active" id="tab-saves-btn" onclick="switchTab('saves')">Saves</button>
+        <button class="tab-btn" id="tab-worlds-btn" onclick="switchTab('worlds')">Meus Mundos</button>
+      </div>
+
+      <!-- Tab: Saves -->
+      <div class="tab-pane active" id="tab-saves">
+        <div id="slots-msg" style="display:none" class="msg"></div>
+        <div id="slots-list"></div>
+      </div>
+
+      <!-- Tab: Mundos -->
+      <div class="tab-pane" id="tab-worlds">
+        <div id="worlds-msg" style="display:none" class="msg"></div>
+        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="showCreateWorldForm()">+ Novo
+          Mundo</button>
+        <div id="worlds-list"></div>
+
+        <!-- Create World Form (hidden by default) -->
+        <div id="create-world-form" style="display:none" class="panel" style="margin-top:16px">
+          <span class="panel-label">Criar Mundo</span>
+          <div class="field">
+            <label>Nome do Mundo</label>
+            <input type="text" id="wf-title" placeholder="Ex: Escola dos Predadores" maxlength="100" />
+          </div>
+          <div class="field">
+            <label>Conceito do Mundo</label>
+            <textarea id="wf-concept"
+              placeholder="Descreva o universo, contexto, atmosfera, personagens típicos..."></textarea>
+          </div>
+          <div class="field">
+            <label>Tom Narrativo</label>
+            <input type="text" id="wf-tone" placeholder="Ex: dramatico, tenso, comico, sombrio" value="dramatico" />
+          </div>
+          <div class="field">
+            <label>Regras do Mundo</label>
+            <textarea id="wf-rules"
+              placeholder="Limites estruturais: realista, sem poderes, morte permanente..."></textarea>
+          </div>
+          <div class="field">
+            <label><input type="checkbox" id="wf-public" style="margin-right:6px"><p>Tornar público (outros jogadores
+              poderão usar)</p></label>
+          </div>
+          <button class="btn btn-primary" onclick="submitCreateWorld()">Criar Mundo</button>
+          <button class="btn btn-secondary" onclick="hideCreateWorldForm()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pack Select Screen -->
+    <div id="screen-pack-select">
+      <div class="slots-header">
+        <h2>Escolha o Universo</h2>
+        <button class="logout-btn" onclick="cancelPackSelect()">Voltar</button>
+      </div>
+      <p style="font-size:13px;opacity:0.6;margin-bottom:16px;font-style:italic">
+        Escolha um Roleplay Pack para o Slot <span id="pack-slot-label">?</span>. O Pack define o universo, personagens
+        e tom da sua história.
+      </p>
+      <div id="packs-msg" style="display:none" class="msg"></div>
+      <div class="pack-grid" id="packs-grid"></div>
+
+      <div class="field" style="margin-top:8px">
+        <label>Nome da história</label>
+        <input type="text" id="pack-title-input" placeholder="Nova Historia" maxlength="80" />
+      </div>
+      <button class="btn btn-primary" onclick="confirmCreateSlot()">Começar História</button>
     </div>
 
   </div>
 
   <script>
-    // ============================================================
-    // Config - replace with your actual Supabase project values
-    // ============================================================
     const SUPABASE_URL = "https://bvuxdtcmsakizqigneuk.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dXhkdGNtc2FraXpxaWduZXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NjIwNTQsImV4cCI6MjA4NzIzODA1NH0.mq-dgjzV02xbw-oWpTTH9x64wIqFeB4mCpmH1q3XDrA";
     const API_BASE = "http://localhost:8000";
 
-    // ============================================================
-    // State
-    // ============================================================
     var authMode = "login";
     var authToken = null;
     var currentUser = null;
+    var pendingSlotNumber = null;
+    var selectedPackId = null;
+    var availablePacks = [];
 
     // ============================================================
-    // Supabase Auth helpers (direct REST, no SDK dependency)
+    // Supabase Auth
     // ============================================================
 
     async function supabaseSignUp(email, password, username) {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON,
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          data: { username },
-        }),
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
+        body: JSON.stringify({ email, password, data: { username } }),
       });
       const data = await res.json();
-      // Injeta o status HTTP no retorno para tratamento de erros
       data._status = res.status;
       return data;
     }
@@ -565,26 +696,16 @@
     async function supabaseSignIn(email, password) {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON,
-        },
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
         body: JSON.stringify({ email, password }),
       });
       return res.json();
     }
 
-    // ============================================================
-    // API helpers
-    // ============================================================
-
     async function api(method, path, body = null) {
       const opts = {
         method,
-        headers: {
-          "Authorization": `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Authorization": `Bearer ${authToken}`, "Content-Type": "application/json" },
       };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(`${API_BASE}${path}`, opts);
@@ -599,14 +720,10 @@
 
     function toggleAuthMode() {
       authMode = authMode === "login" ? "register" : "login";
-      document.getElementById("auth-panel-label").textContent =
-        authMode === "login" ? "Entrar" : "Cadastro";
-      document.getElementById("btn-auth").textContent =
-        authMode === "login" ? "Entrar" : "Criar conta";
-      document.getElementById("toggle-auth").textContent =
-        authMode === "login" ? "Cadastre-se" : "Entrar";
-      document.getElementById("field-username").style.display =
-        authMode === "login" ? "none" : "block";
+      document.getElementById("auth-panel-label").textContent = authMode === "login" ? "Entrar" : "Cadastro";
+      document.getElementById("btn-auth").textContent = authMode === "login" ? "Entrar" : "Criar conta";
+      document.getElementById("toggle-auth").textContent = authMode === "login" ? "Cadastre-se" : "Entrar";
+      document.getElementById("field-username").style.display = authMode === "login" ? "none" : "block";
       clearMsg("auth-msg");
     }
 
@@ -614,93 +731,44 @@
       const email = document.getElementById("inp-email").value.trim();
       const password = document.getElementById("inp-password").value;
       const username = document.getElementById("inp-username").value.trim();
-
-      if (!email || !password) {
-        return showMsg("auth-msg", "Preencha tudo (lá ele).", "error");
-      }
-
+      if (!email || !password) return showMsg("auth-msg", "Preencha tudo.", "error");
       setBtnLoading("btn-auth", true);
       clearMsg("auth-msg");
-
       try {
         let data;
         if (authMode === "register") {
           if (!username) return showMsg("auth-msg", "Escolha um username.", "error");
-          if (username.length < 3) return showMsg("auth-msg", "Username precisa ter no minimo 3 caracteres.", "error");
-          if (!/^[a-zA-Z0-9_]+$/.test(username)) return showMsg("auth-msg", "Username so pode ter letras, numeros e _", "error");
-
-          // Verifica se username ja existe antes de criar conta
+          if (username.length < 3) return showMsg("auth-msg", "Username precisa ter no mínimo 3 caracteres.", "error");
+          if (!/^[a-zA-Z0-9_]+$/.test(username)) return showMsg("auth-msg", "Username só pode ter letras, números e _", "error");
           try {
             const checkRes = await fetch(`${API_BASE}/check-username?username=${encodeURIComponent(username)}`);
-            if (checkRes.ok) {
-              const check = await checkRes.json();
-              if (check.taken) throw new Error("Username ja esta em uso. Escolha outro.");
-            }
+            if (checkRes.ok) { const c = await checkRes.json(); if (c.taken) throw new Error("Username já está em uso."); }
           } catch (e) { if (e.message.includes("Username")) throw e; }
-
-          // Verifica se email ja existe
-          try {
-            const emailRes = await fetch(`${API_BASE}/check-email?email=${encodeURIComponent(email)}`);
-            if (emailRes.ok) {
-              const emailCheck = await emailRes.json();
-              if (emailCheck.taken) throw new Error("Email ja cadastrado. Faca login.");
-            }
-          } catch (e) { if (e.message.includes("Email") || e.message.includes("cadastrado")) throw e; }
-
           data = await supabaseSignUp(email, password, username);
-
-          // 422 = email ja cadastrado ou dados invalidos
-          if (data._status === 422) {
-            const msg = (data.msg || data.message || "").toLowerCase();
-            if (msg.includes("already") || msg.includes("registered") || msg.includes("taken")) {
-              throw new Error("Email ja cadastrado. Faca login.");
-            }
-            throw new Error("Dados invalidos: " + (data.msg || data.message || "verifique email e senha"));
-          }
-
+          if (data._status === 422) throw new Error("Dados inválidos: " + (data.msg || data.message || "verifique email e senha"));
           if (data.error) {
             const msg = data.error.message || data.error || data.msg || "";
             if (msg.toLowerCase().includes("password")) throw new Error("Use pelo menos 6 caracteres.");
-            if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("registered")) throw new Error("Email ja cadastrado. Faca login.");
+            if (msg.toLowerCase().includes("already")) throw new Error("Email já cadastrado. Faça login.");
             throw new Error(msg || "Erro ao criar conta.");
           }
-          if (data.access_token) {
-            authToken = data.access_token;
-            currentUser = data.user;
-            enterSlotsScreen();
-            return;
-          }
+          if (data.access_token) { authToken = data.access_token; currentUser = data.user; enterSlotsScreen(); return; }
           showMsg("auth-msg", "Conta criada! Entrando...", "info");
           await new Promise(r => setTimeout(r, 1000));
           data = await supabaseSignIn(email, password);
-          if (data.error || data.error_description) {
-            const errMsg = data.error_description || data.error || "";
-            if (errMsg.toLowerCase().includes("confirm") || errMsg.toLowerCase().includes("email"))
-              throw new Error("Confirme seu email antes de entrar. Verifique sua caixa de entrada.");
-            throw new Error("Conta criada, mas login falhou: " + errMsg);
-          }
-          if (!data.access_token) throw new Error("Conta criada! Tente fazer login manualmente.");
-          authToken = data.access_token;
-          currentUser = data.user;
-          enterSlotsScreen();
-          return;
         } else {
           data = await supabaseSignIn(email, password);
-          if (data.error || data.error_description) {
-            const errMsg = data.error_description || data.error || "";
-            if (errMsg.toLowerCase().includes("invalid login") || errMsg.toLowerCase().includes("invalid_grant"))
-              throw new Error("Email ou senha incorretos.");
-            if (errMsg.toLowerCase().includes("confirm"))
-              throw new Error("Confirme seu email antes de entrar.");
-            throw new Error(errMsg || "Login falhou.");
-          }
-          if (!data.access_token) throw new Error("Login falhou: tente novamente.");
         }
-
+        if (data.error || data.error_description) {
+          const em = data.error_description || data.error || "";
+          if (em.toLowerCase().includes("invalid")) throw new Error("Email ou senha incorretos.");
+          if (em.toLowerCase().includes("confirm")) throw new Error("Confirme seu email antes de entrar.");
+          throw new Error(em || "Login falhou.");
+        }
+        if (!data.access_token) throw new Error("Login falhou: tente novamente.");
         authToken = data.access_token;
         currentUser = data.user;
         enterSlotsScreen();
-
       } catch (err) {
         showMsg("auth-msg", err.message, "error");
       } finally {
@@ -709,8 +777,7 @@
     }
 
     function logout() {
-      authToken = null;
-      currentUser = null;
+      authToken = null; currentUser = null;
       document.getElementById("screen-slots").style.display = "none";
       document.getElementById("screen-auth").style.display = "block";
       document.getElementById("inp-password").value = "";
@@ -718,25 +785,31 @@
     }
 
     // ============================================================
-    // Slots
+    // Slots Screen
     // ============================================================
 
     async function enterSlotsScreen() {
       document.getElementById("screen-auth").style.display = "none";
       document.getElementById("screen-slots").style.display = "block";
       await loadSlots();
+      await loadWorlds();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-saves").classList.toggle("active", tab === "saves");
+      document.getElementById("tab-worlds").classList.toggle("active", tab === "worlds");
+      document.getElementById("tab-saves-btn").classList.toggle("active", tab === "saves");
+      document.getElementById("tab-worlds-btn").classList.toggle("active", tab === "worlds");
     }
 
     async function loadSlots() {
+      clearMsg("slots-msg");
+      const container = document.getElementById("slots-list");
+      container.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
       try {
         const profile = await api("GET", "/profile");
         document.getElementById("user-badge").textContent = profile.username;
       } catch (_) { }
-
-      clearMsg("slots-msg");
-      const container = document.getElementById("slots-list");
-      container.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
-
       try {
         const slots = await api("GET", "/slots");
         renderSlots(slots);
@@ -749,57 +822,108 @@
     function renderSlots(slots) {
       const container = document.getElementById("slots-list");
       container.innerHTML = "";
-
+      const phaseIcons = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
       for (const slot of slots) {
         const card = document.createElement("div");
         card.className = "slot-card" + (slot.occupied ? "" : " slot-empty");
-
         if (slot.occupied) {
-          const phase = slot.current_phase;
-          const phaseIcons = { morning: "Manha", afternoon: "Tarde", night: "Noite" };
           card.innerHTML = `
-        <div class="slot-number">${slot.slot_number}</div>
-        <div class="slot-body">
-          <div class="slot-title">${escHtml(slot.title)}</div>
-          <div class="slot-meta">Dia ${slot.current_day} &bull; ${phaseIcons[phase] || phase}</div>
-        </div>
-        <div class="slot-actions">
-          <button class="slot-btn" onclick="openSlot('${slot.id}')">Jogar</button>
-          <button class="slot-btn red" onclick="confirmDelete(${slot.slot_number})">Apagar</button>
-        </div>
-      `;
+          <div class="slot-number">${slot.slot_number}</div>
+          <div class="slot-body">
+            <div class="slot-title">${escHtml(slot.title)}</div>
+            <div class="slot-meta">Dia ${slot.current_day} &bull; ${phaseIcons[slot.current_phase] || slot.current_phase}</div>
+            ${slot.pack_id ? '<span class="slot-pack-tag">Pack ativo</span>' : ''}
+          </div>
+          <div class="slot-actions">
+            <button class="slot-btn" onclick="openSlot('${slot.id}')">Jogar</button>
+            <button class="slot-btn red" onclick="confirmDelete(${slot.slot_number})">Apagar</button>
+          </div>`;
         } else {
           card.innerHTML = `
-        <div class="slot-number">${slot.slot_number}</div>
-        <div class="slot-body">
-          <div class="slot-title">Vazio</div>
-        </div>
-        <div class="slot-actions">
-          <button class="slot-btn" onclick="createSlot(${slot.slot_number})">Novo</button>
-        </div>
-      `;
+          <div class="slot-number">${slot.slot_number}</div>
+          <div class="slot-body"><div class="slot-title">Vazio</div></div>
+          <div class="slot-actions">
+            <button class="slot-btn" onclick="startCreateSlot(${slot.slot_number})">Novo</button>
+          </div>`;
         }
-
         container.appendChild(card);
       }
     }
 
-    async function createSlot(slotNumber) {
-      const title = prompt("Nome da historia (ou deixe em branco):");
-      if (title === null) return;
+    async function startCreateSlot(slotNumber) {
+      pendingSlotNumber = slotNumber;
+      selectedPackId = null;
+      document.getElementById("screen-slots").style.display = "none";
+      document.getElementById("screen-pack-select").style.display = "block";
+      document.getElementById("pack-slot-label").textContent = slotNumber;
+      document.getElementById("pack-title-input").value = "";
+      clearMsg("packs-msg");
+      await loadPacksForSelect();
+    }
+
+    async function loadPacksForSelect() {
+      const grid = document.getElementById("packs-grid");
+      grid.innerHTML = '<p style="opacity:0.5">Carregando packs...</p>';
       try {
-        await api("POST", "/slots", {
-          slot_number: slotNumber,
-          title: title || "Nova Historia",
-        });
-        await loadSlots();
+        availablePacks = await api("GET", "/worlds");
+        renderPackGrid();
       } catch (err) {
-        showMsg("slots-msg", err.message, "error");
+        grid.innerHTML = '';
+        showMsg("packs-msg", "Erro ao carregar packs: " + err.message, "error");
       }
     }
 
+    function renderPackGrid() {
+      const grid = document.getElementById("packs-grid");
+      grid.innerHTML = "";
+
+      // "Sem pack" option
+      const noneCard = document.createElement("div");
+      noneCard.className = "pack-none-card" + (selectedPackId === null ? " selected" : "");
+      noneCard.onclick = () => selectPack(null);
+      noneCard.innerHTML = `<div style="font-size:22px">:/</div><div style="font-size:12px;font-weight:bold;margin-top:4px">Sem Pack</div><div style="font-size:11px;margin-top:3px">Mundo livre, sem regras predefinidas</div>`;
+      grid.appendChild(noneCard);
+
+      for (const pack of availablePacks) {
+        const card = document.createElement("div");
+        card.className = "pack-card" + (selectedPackId === pack.id ? " selected" : "");
+        card.onclick = () => selectPack(pack.id);
+        const concept = pack.world_concept ? pack.world_concept.substring(0, 80) + "..." : "";
+        card.innerHTML = `
+        <div class="pack-card-title">${escHtml(pack.title)}</div>
+        <div class="pack-card-tone">${escHtml(pack.tone || "")}</div>
+        <div class="pack-card-concept">${escHtml(concept)}</div>`;
+        grid.appendChild(card);
+      }
+    }
+
+    function selectPack(packId) {
+      selectedPackId = packId;
+      renderPackGrid();
+    }
+
+    async function confirmCreateSlot() {
+      const title = document.getElementById("pack-title-input").value.trim() || "Nova Historia";
+      try {
+        const body = { slot_number: pendingSlotNumber, title };
+        if (selectedPackId) body.pack_id = selectedPackId;
+        await api("POST", "/slots", body);
+        document.getElementById("screen-pack-select").style.display = "none";
+        document.getElementById("screen-slots").style.display = "block";
+        await loadSlots();
+      } catch (err) {
+        showMsg("packs-msg", err.message, "error");
+      }
+    }
+
+    function cancelPackSelect() {
+      pendingSlotNumber = null; selectedPackId = null;
+      document.getElementById("screen-pack-select").style.display = "none";
+      document.getElementById("screen-slots").style.display = "block";
+    }
+
     async function confirmDelete(slotNumber) {
-      if (!confirm(`Apagar o slot ${slotNumber}? Isso e permanente.`)) return;
+      if (!confirm(`Apagar o slot ${slotNumber}? Isso é permanente.`)) return;
       try {
         await api("DELETE", `/slots/${slotNumber}`);
         await loadSlots();
@@ -815,35 +939,89 @@
     }
 
     // ============================================================
+    // Worlds Tab
+    // ============================================================
+
+    async function loadWorlds() {
+      clearMsg("worlds-msg");
+      const container = document.getElementById("worlds-list");
+      container.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
+      try {
+        const worlds = await api("GET", "/worlds");
+        renderWorlds(worlds);
+      } catch (err) {
+        showMsg("worlds-msg", err.message, "error");
+        container.innerHTML = "";
+      }
+    }
+
+    function renderWorlds(worlds) {
+      const container = document.getElementById("worlds-list");
+      container.innerHTML = worlds.map(w => `
+      <div style="border:2px solid var(--black);background:var(--white);padding:12px;margin-bottom:10px">
+        <div style="font-weight:bold;font-size:14px">${escHtml(w.title)}
+          ${w.is_public ? '<span style="font-size:10px;background:var(--ink);color:var(--white);padding:1px 6px;margin-left:6px">PÚBLICO</span>' : ''}
+        </div>
+        <div style="font-size:11px;opacity:0.6;margin-top:2px">${escHtml(w.tone || "")}</div>
+        <div style="font-size:12px;margin-top:6px;opacity:0.8">${escHtml((w.world_concept || "").substring(0, 100))}${(w.world_concept || "").length > 100 ? "..." : ""}</div>
+        ${w.owner_id ? `<button class="slot-btn red" style="margin-top:8px;padding:4px 10px;border:1px solid var(--red);cursor:pointer;font-family:var(--font);font-size:11px" onclick="deleteWorld('${w.id}')">Apagar</button>` : ""}
+      </div>
+    `).join("");
+    }
+
+    function showCreateWorldForm() {
+      document.getElementById("create-world-form").style.display = "block";
+    }
+    function hideCreateWorldForm() {
+      document.getElementById("create-world-form").style.display = "none";
+    }
+
+    async function submitCreateWorld() {
+      const title = document.getElementById("wf-title").value.trim();
+      const concept = document.getElementById("wf-concept").value.trim();
+      const tone = document.getElementById("wf-tone").value.trim() || "dramatico";
+      const rules = document.getElementById("wf-rules").value.trim();
+      const isPublic = document.getElementById("wf-public").checked;
+      if (!title) return showMsg("worlds-msg", "Nome do mundo é obrigatório.", "error");
+      if (concept.length < 20) return showMsg("worlds-msg", "Conceito precisa ter pelo menos 20 caracteres.", "error");
+      try {
+        await api("POST", "/worlds", { title, world_concept: concept, tone, rules_of_world: rules, is_public: isPublic });
+        hideCreateWorldForm();
+        await loadWorlds();
+      } catch (err) {
+        showMsg("worlds-msg", err.message, "error");
+      }
+    }
+
+    async function deleteWorld(worldId) {
+      if (!confirm("Apagar este mundo? Isso é permanente.")) return;
+      try {
+        await api("DELETE", `/worlds/${worldId}`);
+        await loadWorlds();
+      } catch (err) {
+        showMsg("worlds-msg", err.message, "error");
+      }
+    }
+
+    // ============================================================
     // UI Utilities
     // ============================================================
 
     function showMsg(id, text, type) {
       const el = document.getElementById(id);
-      el.textContent = text;
-      el.className = "msg msg-" + type;
-      el.style.display = "block";
+      el.textContent = text; el.className = "msg msg-" + type; el.style.display = "block";
     }
-
     function clearMsg(id) {
       const el = document.getElementById(id);
-      el.style.display = "none";
-      el.textContent = "";
+      if (el) { el.style.display = "none"; el.textContent = ""; }
     }
-
     function setBtnLoading(id, loading) {
       const btn = document.getElementById(id);
-      if (loading) {
-        btn.dataset.originalText = btn.textContent;
-        btn.innerHTML = '<span class="spinner"></span> Aguarda...';
-        btn.disabled = true;
-      } else {
-        btn.textContent = btn.dataset.originalText || btn.textContent;
-        btn.disabled = false;
-      }
+      if (loading) { btn.dataset.originalText = btn.textContent; btn.innerHTML = '<span class="spinner"></span> Aguarda...'; btn.disabled = true; }
+      else { btn.textContent = btn.dataset.originalText || btn.textContent; btn.disabled = false; }
     }
-
     function escHtml(str) {
+      if (!str) return "";
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
   </script>

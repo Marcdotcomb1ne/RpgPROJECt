@@ -1,5 +1,6 @@
 """
 RPG Manhwa - FastAPI Backend
+Includes: Auth, Slots, Game Actions, Roleplay Packs (Worlds/Characters/Backgrounds)
 """
 
 from fastapi import FastAPI, Depends, HTTPException, status
@@ -9,24 +10,24 @@ from pydantic import BaseModel
 from config import get_settings
 from database import get_db, SupabaseClient
 from auth import get_current_user
-from schemas import CreateSlotRequest, UpdateSlotTitleRequest, WorldState
+from schemas import (
+    CreateSlotRequest, UpdateSlotTitleRequest, WorldState,
+    CreateWorldRequest, CreateCharacterRequest, CreateBackgroundRequest,
+)
 from game_service import process_action, get_slot_history, get_slot_arcs
 
 
-app = FastAPI(title="RPG Manhwa API", version="0.1.0")
+app = FastAPI(title="RPG Manhwa API", version="0.2.0")
 
 settings = get_settings()
 
-# CORS: ao usar credentials=True nao se pode usar wildcard "*".
-# Liste aqui as origens do seu frontend (ajuste conforme necessario).
 ALLOWED_ORIGINS = [
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:5500",
     "http://127.0.0.1",
     "http://127.0.0.1:5500",
-    # Adicione aqui a URL de producao quando for hospedar, ex:
-    # "https://seu-site.com",
+    # Adicione URL de producao aqui
 ]
 
 app.add_middleware(
@@ -45,7 +46,11 @@ app.add_middleware(
 @app.get("/health", tags=["system"])
 def health():
     s = get_settings()
-    return {"status": "ok", "ai_enabled": s.ai_engine_enabled}
+    return {
+        "status": "ok",
+        "ai_enabled": s.ai_engine_enabled,
+        "anthropic_configured": bool(s.anthropic_api_key),
+    }
 
 
 # ============================================================
@@ -70,6 +75,223 @@ async def get_profile(
 
 
 # ============================================================
+# Roleplay Worlds (Packs)
+# ============================================================
+
+@app.get("/worlds", tags=["worlds"])
+async def list_worlds(
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    """Lista worlds publicos + worlds do proprio usuario."""
+    public_raw = await (
+        db.table("roleplay_worlds")
+        .select("id, owner_id, title, world_concept, tone, logo_url, is_public")
+        .eq("is_public", "true")
+        .execute()
+    )
+    own_raw = await (
+        db.table("roleplay_worlds")
+        .select("id, owner_id, title, world_concept, tone, logo_url, is_public")
+        .eq("owner_id", user["user_id"])
+        .execute()
+    )
+    # Merge deduplicando por id
+    seen = set()
+    result = []
+    for row in public_raw.as_list() + own_raw.as_list():
+        if row["id"] not in seen:
+            seen.add(row["id"])
+            result.append(row)
+    return result
+
+
+@app.get("/worlds/{world_id}", tags=["worlds"])
+async def get_world(
+    world_id: str,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    raw = await (
+        db.table("roleplay_worlds")
+        .select("*")
+        .eq("id", world_id)
+        .execute()
+    )
+    world = raw.first()
+    if not world:
+        raise HTTPException(status_code=404, detail="World nao encontrado")
+    if not world.get("is_public") and world.get("owner_id") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+
+    chars = await (
+        db.table("roleplay_characters")
+        .select("*")
+        .eq("world_id", world_id)
+        .execute()
+    )
+    bgs = await (
+        db.table("roleplay_backgrounds")
+        .select("*")
+        .eq("world_id", world_id)
+        .execute()
+    )
+    return {
+        **world,
+        "characters": chars.as_list(),
+        "backgrounds": bgs.as_list(),
+    }
+
+
+@app.post("/worlds", tags=["worlds"], status_code=status.HTTP_201_CREATED)
+async def create_world(
+    body: CreateWorldRequest,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    raw = await db.table("roleplay_worlds").insert({
+        "owner_id": user["user_id"],
+        "title": body.title,
+        "world_concept": body.world_concept,
+        "tone": body.tone,
+        "rules_of_world": body.rules_of_world,
+        "logo_url": body.logo_url,
+        "is_public": body.is_public,
+    }).execute()
+    row = raw.as_list()
+    if not row:
+        raise HTTPException(status_code=500, detail="Erro ao criar world")
+    return row[0]
+
+
+@app.patch("/worlds/{world_id}", tags=["worlds"])
+async def update_world(
+    world_id: str,
+    body: CreateWorldRequest,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    existing = await (
+        db.table("roleplay_worlds").select("id, owner_id").eq("id", world_id).execute()
+    )
+    w = existing.first()
+    if not w:
+        raise HTTPException(status_code=404, detail="World nao encontrado")
+    if w["owner_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Somente o criador pode editar")
+
+    await db.table("roleplay_worlds").update({
+        "title": body.title,
+        "world_concept": body.world_concept,
+        "tone": body.tone,
+        "rules_of_world": body.rules_of_world,
+        "logo_url": body.logo_url,
+        "is_public": body.is_public,
+    }).eq("id", world_id).execute()
+    return {"message": "World atualizado"}
+
+
+@app.delete("/worlds/{world_id}", tags=["worlds"])
+async def delete_world(
+    world_id: str,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    existing = await (
+        db.table("roleplay_worlds").select("id, owner_id").eq("id", world_id).execute()
+    )
+    w = existing.first()
+    if not w:
+        raise HTTPException(status_code=404, detail="World nao encontrado")
+    if w["owner_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Somente o criador pode deletar")
+
+    await db.table("roleplay_characters").delete().eq("world_id", world_id).execute()
+    await db.table("roleplay_backgrounds").delete().eq("world_id", world_id).execute()
+    await db.table("roleplay_worlds").delete().eq("id", world_id).execute()
+    return {"message": "World deletado"}
+
+
+# ============================================================
+# Characters (dentro de um World)
+# ============================================================
+
+@app.post("/worlds/{world_id}/characters", tags=["worlds"], status_code=201)
+async def add_character(
+    world_id: str,
+    body: CreateCharacterRequest,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    w = (await db.table("roleplay_worlds").select("owner_id").eq("id", world_id).execute()).first()
+    if not w or w["owner_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    raw = await db.table("roleplay_characters").insert({
+        "world_id": world_id,
+        "name": body.name,
+        "image_url": body.image_url,
+        "personality_json": body.personality_json,
+        "base_traits_json": body.base_traits_json,
+    }).execute()
+    return raw.as_list()[0]
+
+
+@app.delete("/characters/{character_id}", tags=["worlds"])
+async def delete_character(
+    character_id: str,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    char = (await db.table("roleplay_characters").select("id, world_id").eq("id", character_id).execute()).first()
+    if not char:
+        raise HTTPException(status_code=404, detail="Personagem nao encontrado")
+    w = (await db.table("roleplay_worlds").select("owner_id").eq("id", char["world_id"]).execute()).first()
+    if not w or w["owner_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    await db.table("roleplay_characters").delete().eq("id", character_id).execute()
+    return {"message": "Personagem deletado"}
+
+
+# ============================================================
+# Backgrounds (dentro de um World)
+# ============================================================
+
+@app.post("/worlds/{world_id}/backgrounds", tags=["worlds"], status_code=201)
+async def add_background(
+    world_id: str,
+    body: CreateBackgroundRequest,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    w = (await db.table("roleplay_worlds").select("owner_id").eq("id", world_id).execute()).first()
+    if not w or w["owner_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    raw = await db.table("roleplay_backgrounds").insert({
+        "world_id": world_id,
+        "name": body.name,
+        "image_url": body.image_url,
+        "description": body.description,
+    }).execute()
+    return raw.as_list()[0]
+
+
+@app.delete("/backgrounds/{background_id}", tags=["worlds"])
+async def delete_background(
+    background_id: str,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    bg = (await db.table("roleplay_backgrounds").select("id, world_id").eq("id", background_id).execute()).first()
+    if not bg:
+        raise HTTPException(status_code=404, detail="Background nao encontrado")
+    w = (await db.table("roleplay_worlds").select("owner_id").eq("id", bg["world_id"]).execute()).first()
+    if not w or w["owner_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    await db.table("roleplay_backgrounds").delete().eq("id", background_id).execute()
+    return {"message": "Background deletado"}
+
+
+# ============================================================
 # Save Slots
 # ============================================================
 
@@ -80,13 +302,12 @@ async def list_slots(
 ):
     raw = await (
         db.table("save_slots")
-        .select("id, slot_number, title, created_at, last_played, world_state")
+        .select("id, slot_number, title, created_at, last_played, world_state, pack_id")
         .eq("user_id", user["user_id"])
         .order("slot_number")
         .execute()
     )
     rows = raw.as_list()
-
     slot_map = {r["slot_number"]: r for r in rows}
     result = []
     for i in range(1, 6):
@@ -98,6 +319,7 @@ async def list_slots(
                 "occupied": True,
                 "id": r["id"],
                 "title": r["title"],
+                "pack_id": r.get("pack_id"),
                 "created_at": r["created_at"],
                 "last_played": r["last_played"],
                 "current_day": ws.get("current_day", 1),
@@ -122,22 +344,33 @@ async def create_slot(
         .execute()
     )
     if existing.first():
-        raise HTTPException(
-            status_code=400,
-            detail=f"Slot {body.slot_number} ja esta ocupado.",
+        raise HTTPException(status_code=400, detail=f"Slot {body.slot_number} ja esta ocupado.")
+
+    # If pack_id provided, validate it exists and is accessible
+    if body.pack_id:
+        pack_raw = await (
+            db.table("roleplay_worlds").select("id, is_public, owner_id")
+            .eq("id", body.pack_id).execute()
         )
+        pack = pack_raw.first()
+        if not pack:
+            raise HTTPException(status_code=404, detail="Roleplay Pack nao encontrado")
+        if not pack.get("is_public") and pack.get("owner_id") != user["user_id"]:
+            raise HTTPException(status_code=403, detail="Pack nao disponivel")
 
     default_ws = WorldState()
-    raw = await (
-        db.table("save_slots").insert({
-            "user_id": user["user_id"],
-            "slot_number": body.slot_number,
-            "title": body.title,
-            "world_state": default_ws.model_dump(),
-            "memory_summary": "",
-            "timeline": [],
-        }).execute()
-    )
+    insert_data = {
+        "user_id": user["user_id"],
+        "slot_number": body.slot_number,
+        "title": body.title,
+        "world_state": default_ws.model_dump(),
+        "memory_summary": "",
+        "timeline": [],
+    }
+    if body.pack_id:
+        insert_data["pack_id"] = body.pack_id
+
+    raw = await db.table("save_slots").insert(insert_data).execute()
     rows = raw.as_list()
     return {"message": "Slot criado", "slot_id": rows[0]["id"]}
 
@@ -151,15 +384,20 @@ async def delete_slot(
     if not 1 <= slot_number <= 5:
         raise HTTPException(status_code=400, detail="Slot deve ser entre 1 e 5")
 
-    raw = await (
-        db.table("save_slots")
-        .delete()
-        .eq("user_id", user["user_id"])
-        .eq("slot_number", slot_number)
-        .execute()
+    # Get slot id first to delete events
+    slot_raw = await (
+        db.table("save_slots").select("id")
+        .eq("user_id", user["user_id"]).eq("slot_number", slot_number).execute()
     )
-    if not raw.as_list():
+    slot = slot_raw.first()
+    if not slot:
         raise HTTPException(status_code=404, detail="Slot nao encontrado")
+
+    slot_id = slot["id"]
+    # Delete related data
+    await db.table("events_log").delete().eq("save_id", slot_id).execute()
+    await db.table("story_arcs").delete().eq("save_id", slot_id).execute()
+    await db.table("save_slots").delete().eq("id", slot_id).execute()
     return {"message": f"Slot {slot_number} deletado"}
 
 
@@ -256,8 +494,7 @@ async def slot_arcs(
 
 
 # ============================================================
-# Username / email check (chamado antes do signup para evitar duplicatas)
-# Esses endpoints sao publicos (sem auth) intencionalmente
+# Username / email check
 # ============================================================
 
 @app.get("/check-username", tags=["profile"])
@@ -275,15 +512,7 @@ async def check_username(
 
 
 @app.get("/check-email", tags=["profile"])
-async def check_email(
-    email: str,
-    db: SupabaseClient = Depends(get_db),
-):
-    # Busca na tabela profiles via join com auth.users nao e possivel via REST
-    # Usamos a tabela profiles que tem o email no metadata do user
-    # Alternativa: tenta buscar direto nos profiles pelo id que seria igual
-    # Como nao temos email na tabela profiles, retornamos taken=false
-    # e deixamos o Supabase rejeitar com 422 (tratado no frontend)
+async def check_email(email: str):
     return {"taken": False}
 
 

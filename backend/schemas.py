@@ -19,9 +19,10 @@ class WorldState(BaseModel):
     event_counter_global: int = Field(default=0, ge=0)
     event_counter_arc: int = Field(default=0, ge=0)
     relationships: dict[str, Any] = Field(default_factory=dict)
+    current_background: Optional[str] = Field(default=None)
+    active_characters: list[str] = Field(default_factory=list)
 
     def next_phase(self) -> "WorldState":
-        """Advances the time phase. Returns updated state."""
         phases = ["morning", "afternoon", "night"]
         idx = phases.index(self.current_phase)
         if idx == len(phases) - 1:
@@ -55,6 +56,7 @@ class SaveSlotDetail(SaveSlotSummary):
 class CreateSlotRequest(BaseModel):
     slot_number: int = Field(..., ge=1, le=5)
     title: str = Field(default="Nova Historia", max_length=80)
+    pack_id: Optional[str] = Field(default=None)
 
 
 class UpdateSlotTitleRequest(BaseModel):
@@ -81,7 +83,6 @@ class PlayerAction(BaseModel):
         return ACTION_PATTERN.findall(self.raw_input)
 
     def is_valid_format(self) -> bool:
-        """Input must contain at least one dialogue or action marker."""
         return bool(self.dialogues or self.actions)
 
     def to_structured(self) -> dict:
@@ -118,13 +119,44 @@ class StoryArc(BaseModel):
 
 
 # ============================================================
-# AI Response (placeholder structure)
+# Roleplay Pack / World
+# ============================================================
+
+class CreateWorldRequest(BaseModel):
+    title: str = Field(..., max_length=100)
+    world_concept: str = Field(..., min_length=20, max_length=2000)
+    tone: str = Field(default="dramatico", max_length=100)
+    rules_of_world: str = Field(default="", max_length=1000)
+    logo_url: Optional[str] = Field(default=None)
+    is_public: bool = Field(default=False)
+
+
+class CreateCharacterRequest(BaseModel):
+    world_id: str
+    name: str = Field(..., max_length=80)
+    image_url: Optional[str] = Field(default=None)
+    personality_json: dict = Field(default_factory=dict)
+    base_traits_json: dict = Field(default_factory=dict)
+
+
+class CreateBackgroundRequest(BaseModel):
+    world_id: str
+    name: str = Field(..., max_length=80)
+    image_url: Optional[str] = Field(default=None)
+    description: str = Field(default="", max_length=500)
+
+
+# ============================================================
+# AI Response
 # ============================================================
 
 class AIResponse(BaseModel):
     narration: str
     world_state_deltas: dict[str, Any] = Field(default_factory=dict)
-    arc_signal: Optional[str] = None  # "start", "evolve", "close", or None
+    arc_signal: Optional[str] = None        # "start", "close", or None
     arc_title: Optional[str] = None
     arc_summary: Optional[str] = None
     memory_update: Optional[str] = None
+    relationship_updates: dict[str, Any] = Field(default_factory=dict)
+    background_hint: Optional[str] = None
+    active_characters: list[str] = Field(default_factory=list)

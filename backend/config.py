@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_service_key: str
     supabase_jwt_secret: str
+    anthropic_api_key: str = ""
     ai_engine_url: str = "http://localhost:8001"
     ai_engine_enabled: bool = False
     app_host: str = "0.0.0.0"
