@@ -27,7 +27,7 @@ def get_current_user(
     except JWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Token invalido: {e}",
+            detail=f"Token invalido: {e}. Verifique SUPABASE_JWT_SECRET no .env",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

@@ -502,16 +502,16 @@
 // ============================================================
 // Config - replace with your actual Supabase project values
 // ============================================================
-const SUPABASE_URL   = "https://bvuxdtcmsakizqigneuk.supabase.co";
-const SUPABASE_ANON  = "sb_publishable_vlCgrTTr5m49efwcAqsfLA_E4j86-Ky";
-const API_BASE       = "http://localhost:8000";  // FastAPI backend
+const SUPABASE_URL  = "https://bvuxdtcmsakizqigneuk.supabase.co";
+const SUPABASE_ANON = "sb_publishable_vlCgrTTr5m49efwcAqsfLA_E4j86-Ky";
+const API_BASE      = "http://localhost:8000";
 
 // ============================================================
 // State
 // ============================================================
-let authMode   = "login";   // "login" | "register"
-let authToken  = null;
-let currentUser = null;
+var authMode   = "login";
+var authToken  = null;
+var currentUser = null;
 
 // ============================================================
 // Supabase Auth helpers (direct REST, no SDK dependency)
@@ -599,12 +599,32 @@ async function handleAuth() {
       if (!username) return showMsg("auth-msg", "Escolha um username.", "error");
       data = await supabaseSignUp(email, password, username);
       if (data.error) throw new Error(data.error.message || data.msg);
-      showMsg("auth-msg", "Conta criada! Verifique seu email e entrar.", "info");
+
+      // Se confirmacao de email esta desligada, Supabase retorna token direto
+      if (data.access_token) {
+        authToken = data.access_token;
+        currentUser = data.user;
+        enterSlotsScreen();
+        return;
+      }
+
+      // Sem token no cadastro: tenta login imediato como fallback
+      data = await supabaseSignIn(email, password);
+      if (data.error || data.error_description)
+        throw new Error("Conta criada, mas login falhou: " + (data.error_description || data.error));
+      if (!data.access_token)
+        throw new Error("Conta criada! Confirme o email e faca login manualmente.");
+
+      authToken = data.access_token;
+      currentUser = data.user;
+      enterSlotsScreen();
       return;
     } else {
       data = await supabaseSignIn(email, password);
       if (data.error || data.error_description)
         throw new Error(data.error_description || data.error);
+      if (!data.access_token)
+        throw new Error("Login falhou: token nao recebido. Verifique as credenciais.");
     }
 
     authToken = data.access_token;
