@@ -11,6 +11,8 @@ Orquestra o loop completo de acao:
 7. Sumariza memoria periodicamente
 """
 
+import asyncio
+
 from database import SupabaseClient
 from schemas import WorldState, PlayerAction, AIResponse
 from ai_engine import call_narrator, call_arc_analyst, call_summarizer
@@ -18,18 +20,18 @@ from ai_engine import call_narrator, call_arc_analyst, call_summarizer
 SUMMARIZE_EVERY = 10
 
 
-def _get_slot(db: SupabaseClient, save_id: str, user_id: str) -> dict:
-    result = (
+async def _get_slot(db: SupabaseClient, save_id: str, user_id: str) -> dict:
+    result = await (
         db.table("save_slots")
         .select("*")
         .eq("id", save_id)
         .eq("user_id", user_id)
         .execute()
-    ).data
-    rows = result if isinstance(result, list) else [result]
-    if not rows:
+    )
+    row = result.first()
+    if not row:
         raise ValueError("Slot nao encontrado")
-    return rows[0]
+    return row
 
 
 async def process_action(
@@ -39,9 +41,9 @@ async def process_action(
     raw_input: str,
 ) -> dict:
     # 1. Carrega slot
-    slot_row = _get_slot(db, save_id, user_id)
+    slot_row = await _get_slot(db, save_id, user_id)
     world_state = WorldState(**slot_row["world_state"])
-    memory_summary: str = slot_row["memory_summary"]
+    memory_summary: str = slot_row.get("memory_summary", "")
 
     # 2. Valida input
     action = PlayerAction(raw_input=raw_input)
@@ -54,15 +56,15 @@ async def process_action(
     world_state = world_state.next_phase()
 
     # 4. Eventos recentes para contexto da IA
-    recent_raw = (
+    recent_result = await (
         db.table("events_log")
         .select("type, content, created_at")
         .eq("save_id", save_id)
         .order("created_at", desc=True)
         .limit(30)
         .execute()
-    ).data or []
-    recent_events = list(reversed(recent_raw if isinstance(recent_raw, list) else []))
+    )
+    recent_events = list(reversed(recent_result.as_list()))
 
     # 5. Chama IA
     ai_response: AIResponse = await call_narrator(
@@ -87,54 +89,52 @@ async def process_action(
     })
 
     # 7. Loga acao do jogador
-    db.table("events_log").insert({
+    await db.table("events_log").insert({
         "save_id": save_id,
         "type": "player_action",
         "content": raw_input,
     }).execute()
 
     # 8. Loga narracao
-    db.table("events_log").insert({
+    await db.table("events_log").insert({
         "save_id": save_id,
         "type": "narration",
         "content": ai_response.narration,
     }).execute()
 
     # 9. Analise de arcos
-    arc_raw = (
+    arc_result = await (
         db.table("story_arcs")
         .select("*")
         .eq("save_id", save_id)
         .eq("status", "active")
         .limit(1)
         .execute()
-    ).data
-    arc_list = arc_raw if isinstance(arc_raw, list) else ([arc_raw] if arc_raw else [])
-    active_arc = arc_list[0] if arc_list else None
+    )
+    active_arc = arc_result.first()
 
     arc_response: AIResponse = await call_arc_analyst(
         world_state=world_state,
         recent_events=recent_events,
         active_arc=active_arc,
     )
-    _handle_arc_signal(db, save_id, world_state, arc_response, active_arc)
+    await _handle_arc_signal(db, save_id, world_state, arc_response, active_arc)
 
     # 10. Sumarizacao periodica
     if world_state.event_counter_global % SUMMARIZE_EVERY == 0:
-        all_recent_raw = (
+        all_recent_result = await (
             db.table("events_log")
             .select("type, content")
             .eq("save_id", save_id)
             .order("created_at", desc=True)
             .limit(SUMMARIZE_EVERY * 2)
             .execute()
-        ).data or []
-        all_recent = list(reversed(all_recent_raw if isinstance(all_recent_raw, list) else []))
-        import asyncio
+        )
+        all_recent = list(reversed(all_recent_result.as_list()))
         memory_summary = await call_summarizer(memory_summary, all_recent)
 
     # 11. Persiste slot atualizado
-    db.table("save_slots").update({
+    await db.table("save_slots").update({
         "world_state": world_state.model_dump(),
         "memory_summary": memory_summary,
     }).eq("id", save_id).eq("user_id", user_id).execute()
@@ -147,7 +147,7 @@ async def process_action(
     }
 
 
-def _handle_arc_signal(
+async def _handle_arc_signal(
     db: SupabaseClient,
     save_id: str,
     world_state: WorldState,
@@ -159,7 +159,7 @@ def _handle_arc_signal(
         return
 
     if signal == "start":
-        db.table("story_arcs").insert({
+        await db.table("story_arcs").insert({
             "save_id": save_id,
             "title": arc_response.arc_title or "Novo Arco",
             "start_day": world_state.current_day,
@@ -167,64 +167,64 @@ def _handle_arc_signal(
             "summary": arc_response.arc_summary or "",
             "impact": "",
         }).execute()
-        db.table("events_log").insert({
+        await db.table("events_log").insert({
             "save_id": save_id,
             "type": "arc_event",
             "content": f"[ARCO INICIADO] {arc_response.arc_title}",
         }).execute()
 
     elif signal == "close" and active_arc:
-        db.table("story_arcs").update({
+        await db.table("story_arcs").update({
             "status": "closed",
             "end_day": world_state.current_day,
             "summary": arc_response.arc_summary or active_arc.get("summary", ""),
             "impact": arc_response.arc_title or "",
         }).eq("id", active_arc["id"]).execute()
-        db.table("events_log").insert({
+        await db.table("events_log").insert({
             "save_id": save_id,
             "type": "arc_event",
             "content": f"[ARCO ENCERRADO] {active_arc['title']}",
         }).execute()
 
 
-def get_slot_history(db: SupabaseClient, save_id: str, user_id: str, limit: int = 50) -> list:
-    slot = (
+async def get_slot_history(db: SupabaseClient, save_id: str, user_id: str, limit: int = 50) -> list:
+    slot_result = await (
         db.table("save_slots")
         .select("id")
         .eq("id", save_id)
         .eq("user_id", user_id)
         .execute()
-    ).data
-    if not slot:
+    )
+    if not slot_result.first():
         raise ValueError("Slot nao encontrado")
 
-    raw = (
+    raw = await (
         db.table("events_log")
         .select("id, type, content, created_at")
         .eq("save_id", save_id)
         .order("created_at", desc=False)
         .limit(limit)
         .execute()
-    ).data or []
-    return raw if isinstance(raw, list) else [raw]
+    )
+    return raw.as_list()
 
 
-def get_slot_arcs(db: SupabaseClient, save_id: str, user_id: str) -> list:
-    slot = (
+async def get_slot_arcs(db: SupabaseClient, save_id: str, user_id: str) -> list:
+    slot_result = await (
         db.table("save_slots")
         .select("id")
         .eq("id", save_id)
         .eq("user_id", user_id)
         .execute()
-    ).data
-    if not slot:
+    )
+    if not slot_result.first():
         raise ValueError("Slot nao encontrado")
 
-    raw = (
+    raw = await (
         db.table("story_arcs")
         .select("*")
         .eq("save_id", save_id)
         .order("start_day", desc=False)
         .execute()
-    ).data or []
-    return raw if isinstance(raw, list) else [raw]
+    )
+    return raw.as_list()

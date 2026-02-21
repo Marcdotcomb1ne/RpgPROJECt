@@ -15,9 +15,23 @@ from game_service import process_action, get_slot_history, get_slot_arcs
 
 app = FastAPI(title="RPG Manhwa API", version="0.1.0")
 
+settings = get_settings()
+
+# CORS: ao usar credentials=True nao se pode usar wildcard "*".
+# Liste aqui as origens do seu frontend (ajuste conforme necessario).
+ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:5500",
+    "http://127.0.0.1",
+    "http://127.0.0.1:5500",
+    # Adicione aqui a URL de producao quando for hospedar, ex:
+    # "https://seu-site.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,20 +53,20 @@ def health():
 # ============================================================
 
 @app.get("/profile", tags=["profile"])
-def get_profile(
+async def get_profile(
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
-    raw = (
+    raw = await (
         db.table("profiles")
         .select("id, username, created_at")
         .eq("id", user["user_id"])
         .execute()
-    ).data
-    rows = raw if isinstance(raw, list) else ([raw] if raw else [])
-    if not rows:
+    )
+    row = raw.first()
+    if not row:
         raise HTTPException(status_code=404, detail="Perfil nao encontrado")
-    return rows[0]
+    return row
 
 
 # ============================================================
@@ -60,18 +74,18 @@ def get_profile(
 # ============================================================
 
 @app.get("/slots", tags=["slots"])
-def list_slots(
+async def list_slots(
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
-    raw = (
+    raw = await (
         db.table("save_slots")
         .select("id, slot_number, title, created_at, last_played, world_state")
         .eq("user_id", user["user_id"])
         .order("slot_number")
         .execute()
-    ).data or []
-    rows = raw if isinstance(raw, list) else [raw]
+    )
+    rows = raw.as_list()
 
     slot_map = {r["slot_number"]: r for r in rows}
     result = []
@@ -95,26 +109,26 @@ def list_slots(
 
 
 @app.post("/slots", tags=["slots"], status_code=status.HTTP_201_CREATED)
-def create_slot(
+async def create_slot(
     body: CreateSlotRequest,
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
-    existing = (
+    existing = await (
         db.table("save_slots")
         .select("id")
         .eq("user_id", user["user_id"])
         .eq("slot_number", body.slot_number)
         .execute()
-    ).data
-    if existing:
+    )
+    if existing.first():
         raise HTTPException(
             status_code=400,
             detail=f"Slot {body.slot_number} ja esta ocupado.",
         )
 
     default_ws = WorldState()
-    raw = (
+    raw = await (
         db.table("save_slots").insert({
             "user_id": user["user_id"],
             "slot_number": body.slot_number,
@@ -123,13 +137,13 @@ def create_slot(
             "memory_summary": "",
             "timeline": [],
         }).execute()
-    ).data
-    rows = raw if isinstance(raw, list) else [raw]
+    )
+    rows = raw.as_list()
     return {"message": "Slot criado", "slot_id": rows[0]["id"]}
 
 
 @app.delete("/slots/{slot_number}", tags=["slots"])
-def delete_slot(
+async def delete_slot(
     slot_number: int,
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
@@ -137,54 +151,54 @@ def delete_slot(
     if not 1 <= slot_number <= 5:
         raise HTTPException(status_code=400, detail="Slot deve ser entre 1 e 5")
 
-    raw = (
+    raw = await (
         db.table("save_slots")
         .delete()
         .eq("user_id", user["user_id"])
         .eq("slot_number", slot_number)
         .execute()
-    ).data
-    if not raw:
+    )
+    if not raw.as_list():
         raise HTTPException(status_code=404, detail="Slot nao encontrado")
     return {"message": f"Slot {slot_number} deletado"}
 
 
 @app.patch("/slots/{slot_id}/title", tags=["slots"])
-def rename_slot(
+async def rename_slot(
     slot_id: str,
     body: UpdateSlotTitleRequest,
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
-    raw = (
+    raw = await (
         db.table("save_slots")
         .update({"title": body.title})
         .eq("id", slot_id)
         .eq("user_id", user["user_id"])
         .execute()
-    ).data
-    if not raw:
+    )
+    if not raw.as_list():
         raise HTTPException(status_code=404, detail="Slot nao encontrado")
     return {"message": "Titulo atualizado"}
 
 
 @app.get("/slots/{slot_id}", tags=["slots"])
-def get_slot(
+async def get_slot(
     slot_id: str,
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
-    raw = (
+    raw = await (
         db.table("save_slots")
         .select("*")
         .eq("id", slot_id)
         .eq("user_id", user["user_id"])
         .execute()
-    ).data
-    rows = raw if isinstance(raw, list) else ([raw] if raw else [])
-    if not rows:
+    )
+    row = raw.first()
+    if not row:
         raise HTTPException(status_code=404, detail="Slot nao encontrado")
-    return rows[0]
+    return row
 
 
 # ============================================================
@@ -217,26 +231,26 @@ async def player_action(
 
 
 @app.get("/slots/{slot_id}/history", tags=["game"])
-def slot_history(
+async def slot_history(
     slot_id: str,
     limit: int = 50,
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
     try:
-        return get_slot_history(db, slot_id, user["user_id"], limit)
+        return await get_slot_history(db, slot_id, user["user_id"], limit)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.get("/slots/{slot_id}/arcs", tags=["game"])
-def slot_arcs(
+async def slot_arcs(
     slot_id: str,
     user: dict = Depends(get_current_user),
     db: SupabaseClient = Depends(get_db),
 ):
     try:
-        return get_slot_arcs(db, slot_id, user["user_id"])
+        return await get_slot_arcs(db, slot_id, user["user_id"])
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

@@ -1,6 +1,6 @@
 """
-Supabase REST client - sem SDK, sem Rust, sem drama.
-Usa httpx direto contra a PostgREST API do Supabase.
+Supabase REST client - async, sem SDK, sem Rust, sem drama.
+Usa httpx.AsyncClient contra a PostgREST API do Supabase.
 """
 
 import httpx
@@ -65,10 +65,10 @@ class SupabaseTable:
             h["Accept"] = "application/json"
         return h
 
-    def execute(self) -> "Result":
+    async def execute(self) -> "Result":
         params = self._params()
-        with httpx.Client(timeout=15) as client:
-            r = client.get(
+        async with httpx.AsyncClient(timeout=15) as client:
+            r = await client.get(
                 self._url(),
                 params=params,
                 headers=self._headers_for(),
@@ -114,21 +114,21 @@ class MutationBuilder:
             p[k] = v
         return p
 
-    def execute(self) -> "Result":
+    async def execute(self) -> "Result":
         h = dict(self._headers)
         h["Content-Type"] = "application/json"
         h["Prefer"] = "return=representation"
 
-        with httpx.Client(timeout=15) as client:
+        async with httpx.AsyncClient(timeout=15) as client:
             if self._method == "INSERT":
-                r = client.post(self._url(), json=self._data, headers=h)
+                r = await client.post(self._url(), json=self._data, headers=h)
             elif self._method == "UPDATE":
-                r = client.patch(
+                r = await client.patch(
                     self._url(), json=self._data,
                     params=self._params(), headers=h
                 )
             elif self._method == "DELETE":
-                r = client.delete(
+                r = await client.delete(
                     self._url(), params=self._params(), headers=h
                 )
             else:
@@ -149,11 +149,20 @@ class Result:
             msg = self.data if isinstance(self.data, str) else str(self.data)
             raise RuntimeError(f"Supabase error {response.status_code}: {msg}")
 
-        # Single object endpoint returns a dict, wrap in list for consistency
-        # unless caller used Accept: application/vnd.pgrst.object+json
-        if isinstance(self.data, dict) and "data" not in self.data:
-            # could be a single row result
-            pass
+    def as_list(self) -> list:
+        """Garante retorno como lista independente do formato da resposta."""
+        if self.data is None:
+            return []
+        if isinstance(self.data, list):
+            return self.data
+        if isinstance(self.data, dict):
+            return [self.data]
+        return []
+
+    def first(self) -> dict | None:
+        """Retorna o primeiro item ou None."""
+        rows = self.as_list()
+        return rows[0] if rows else None
 
 
 class SupabaseClient:
