@@ -496,8 +496,7 @@
 
         <div class="field">
           <label for="inp-password">Senha</label>
-          <input type="password" id="inp-password" placeholder="minimo 6 caracteres" autocomplete="current-password"
-            minlength="6" />
+          <input type="password" id="inp-password" placeholder="sua senha" autocomplete="current-password" />
         </div>
 
         <button class="btn btn-primary" id="btn-auth" onclick="handleAuth()">Entrar</button>
@@ -557,7 +556,10 @@
           data: { username },
         }),
       });
-      return res.json();
+      const data = await res.json();
+      // Injeta o status HTTP no retorno para tratamento de erros
+      data._status = res.status;
+      return data;
     }
 
     async function supabaseSignIn(email, password) {
@@ -616,9 +618,6 @@
       if (!email || !password) {
         return showMsg("auth-msg", "Preencha email e senha.", "error");
       }
-      if (password.length < 6) {
-        return showMsg("auth-msg", "Senha precisa ter no minimo 6 caracteres.", "error");
-      }
 
       setBtnLoading("btn-auth", true);
       clearMsg("auth-msg");
@@ -627,54 +626,72 @@
         let data;
         if (authMode === "register") {
           if (!username) return showMsg("auth-msg", "Escolha um username.", "error");
+          if (username.length < 3) return showMsg("auth-msg", "Username precisa ter no minimo 3 caracteres.", "error");
+          if (!/^[a-zA-Z0-9_]+$/.test(username)) return showMsg("auth-msg", "Username so pode ter letras, numeros e _", "error");
+
+          // Verifica se username ja existe antes de criar conta
+          try {
+            const checkRes = await fetch(`${API_BASE}/check-username?username=${encodeURIComponent(username)}`);
+            if (checkRes.ok) {
+              const check = await checkRes.json();
+              if (check.taken) throw new Error("Username ja esta em uso. Escolha outro.");
+            }
+          } catch (e) { if (e.message.includes("Username")) throw e; }
+
+          // Verifica se email ja existe
+          try {
+            const emailRes = await fetch(`${API_BASE}/check-email?email=${encodeURIComponent(email)}`);
+            if (emailRes.ok) {
+              const emailCheck = await emailRes.json();
+              if (emailCheck.taken) throw new Error("Email ja cadastrado. Faca login.");
+            }
+          } catch (e) { if (e.message.includes("Email") || e.message.includes("cadastrado")) throw e; }
 
           data = await supabaseSignUp(email, password, username);
 
-          // Erro explicito do Supabase no signup
-          if (data.error) {
-            const msg = data.error.message || data.error || data.msg || "";
-            if (msg.toLowerCase().includes("password")) throw new Error("Senha fraca. Use pelo menos 6 caracteres.");
-            if (msg.toLowerCase().includes("already")) throw new Error("Email ja cadastrado. Tente fazer login.");
-            throw new Error(msg || "Erro ao criar conta.");
+          // 422 = email ja cadastrado ou dados invalidos
+          if (data._status === 422) {
+            const msg = (data.msg || data.message || "").toLowerCase();
+            if (msg.includes("already") || msg.includes("registered") || msg.includes("taken")) {
+              throw new Error("Email ja cadastrado. Faca login.");
+            }
+            throw new Error("Dados invalidos: " + (data.msg || data.message || "verifique email e senha"));
           }
 
-          // Caso ideal: Supabase retornou token direto (confirm email OFF)
+          if (data.error) {
+            const msg = data.error.message || data.error || data.msg || "";
+            if (msg.toLowerCase().includes("password")) throw new Error("Use pelo menos 6 caracteres.");
+            if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("registered")) throw new Error("Email ja cadastrado. Faca login.");
+            throw new Error(msg || "Erro ao criar conta.");
+          }
           if (data.access_token) {
             authToken = data.access_token;
             currentUser = data.user;
             enterSlotsScreen();
             return;
           }
-
-          // Supabase criou o usuario mas nao retornou token ainda.
-          // Aguarda um pouco e tenta login.
           showMsg("auth-msg", "Conta criada! Entrando...", "info");
           await new Promise(r => setTimeout(r, 1000));
-
           data = await supabaseSignIn(email, password);
-
           if (data.error || data.error_description) {
             const errMsg = data.error_description || data.error || "";
-            if (errMsg.toLowerCase().includes("confirm") || errMsg.toLowerCase().includes("email")) {
+            if (errMsg.toLowerCase().includes("confirm") || errMsg.toLowerCase().includes("email"))
               throw new Error("Confirme seu email antes de entrar. Verifique sua caixa de entrada.");
-            }
             throw new Error("Conta criada, mas login falhou: " + errMsg);
           }
-          if (!data.access_token) {
-            throw new Error("Conta criada! Tente fazer login manualmente.");
-          }
-
+          if (!data.access_token) throw new Error("Conta criada! Tente fazer login manualmente.");
           authToken = data.access_token;
           currentUser = data.user;
           enterSlotsScreen();
           return;
-
         } else {
           data = await supabaseSignIn(email, password);
           if (data.error || data.error_description) {
             const errMsg = data.error_description || data.error || "";
-            if (errMsg.toLowerCase().includes("invalid login")) throw new Error("Email ou senha incorretos.");
-            if (errMsg.toLowerCase().includes("confirm")) throw new Error("Confirme seu email antes de entrar.");
+            if (errMsg.toLowerCase().includes("invalid login") || errMsg.toLowerCase().includes("invalid_grant"))
+              throw new Error("Email ou senha incorretos.");
+            if (errMsg.toLowerCase().includes("confirm"))
+              throw new Error("Confirme seu email antes de entrar.");
             throw new Error(errMsg || "Login falhou.");
           }
           if (!data.access_token) throw new Error("Login falhou: tente novamente.");
@@ -768,12 +785,12 @@
     }
 
     async function createSlot(slotNumber) {
-      const title = prompt("Nome da história (ou deixe em branco):");
+      const title = prompt("Nome da historia (ou deixe em branco):");
       if (title === null) return;
       try {
         await api("POST", "/slots", {
           slot_number: slotNumber,
-          title: title || "Nova História",
+          title: title || "Nova Historia",
         });
         await loadSlots();
       } catch (err) {
@@ -792,8 +809,9 @@
     }
 
     function openSlot(slotId) {
-      // Placeholder - will open the game screen
-      alert(`[PLACEHOLDER] Abrindo slot ${slotId}.\nA tela de jogo ainda nao foi implementada.`);
+      sessionStorage.setItem("slot_id", slotId);
+      sessionStorage.setItem("auth_token", authToken);
+      window.location.href = "game.html";
     }
 
     // ============================================================

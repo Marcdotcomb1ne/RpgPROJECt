@@ -256,6 +256,38 @@ async def slot_arcs(
 
 
 # ============================================================
+# Username / email check (chamado antes do signup para evitar duplicatas)
+# Esses endpoints sao publicos (sem auth) intencionalmente
+# ============================================================
+
+@app.get("/check-username", tags=["profile"])
+async def check_username(
+    username: str,
+    db: SupabaseClient = Depends(get_db),
+):
+    raw = await (
+        db.table("profiles")
+        .select("id")
+        .eq("username", username)
+        .execute()
+    )
+    return {"taken": raw.first() is not None}
+
+
+@app.get("/check-email", tags=["profile"])
+async def check_email(
+    email: str,
+    db: SupabaseClient = Depends(get_db),
+):
+    # Busca na tabela profiles via join com auth.users nao e possivel via REST
+    # Usamos a tabela profiles que tem o email no metadata do user
+    # Alternativa: tenta buscar direto nos profiles pelo id que seria igual
+    # Como nao temos email na tabela profiles, retornamos taken=false
+    # e deixamos o Supabase rejeitar com 422 (tratado no frontend)
+    return {"taken": False}
+
+
+# ============================================================
 # Run
 # ============================================================
 
