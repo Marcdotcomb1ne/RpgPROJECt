@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RPG Manhwa</title>
+<style>
+  /* ======================================================
+     Base
+     ====================================================== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:   #0a0a0a;
+    --white:   #f5f0e8;
+    --red:     #c1121f;
+    --ink:     #1a1a2e;
+    --panel:   #ece8df;
+    --border:  3px solid #0a0a0a;
+    --shadow:  5px 5px 0 #0a0a0a;
+    --font:    'Comic Sans MS', 'Comic Sans', cursive;
+  }
+
+  body {
+    font-family: var(--font);
+    background-color: var(--white);
+    color: var(--black);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* manga screen tone background */
+    background-image:
+      radial-gradient(circle, #00000008 1px, transparent 1px);
+    background-size: 8px 8px;
+    overflow-x: hidden;
+  }
+
+  /* ======================================================
+     Speed lines decoration
+     ====================================================== */
+  .speed-lines {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 200vw;
+    height: 200vh;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.04;
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      #000 0deg 1deg, transparent 1deg 7deg,
+      #000 7deg 8deg, transparent 8deg 14deg,
+      #000 14deg 15deg, transparent 15deg 21deg,
+      #000 21deg 22deg, transparent 22deg 28deg,
+      #000 28deg 29deg, transparent 29deg 35deg,
+      #000 35deg 36deg, transparent 36deg 42deg,
+      #000 42deg 43deg, transparent 43deg 49deg,
+      #000 49deg 50deg, transparent 50deg 56deg,
+      #000 56deg 57deg, transparent 57deg 63deg,
+      #000 63deg 64deg, transparent 64deg 70deg,
+      #000 70deg 71deg, transparent 71deg 77deg,
+      #000 77deg 78deg, transparent 78deg 84deg,
+      #000 84deg 85deg, transparent 85deg 91deg,
+      #000 91deg 92deg, transparent 92deg 98deg,
+      #000 98deg 99deg, transparent 99deg 105deg,
+      #000 105deg 106deg, transparent 106deg 112deg,
+      #000 112deg 113deg, transparent 113deg 119deg,
+      #000 119deg 120deg, transparent 120deg 126deg,
+      #000 126deg 127deg, transparent 127deg 133deg,
+      #000 133deg 134deg, transparent 134deg 140deg,
+      #000 140deg 141deg, transparent 141deg 147deg,
+      #000 147deg 148deg, transparent 148deg 154deg,
+      #000 154deg 155deg, transparent 155deg 161deg,
+      #000 161deg 162deg, transparent 162deg 168deg,
+      #000 168deg 169deg, transparent 169deg 175deg,
+      #000 175deg 176deg, transparent 176deg 182deg,
+      #000 182deg 183deg, transparent 183deg 189deg,
+      #000 189deg 190deg, transparent 190deg 196deg,
+      #000 196deg 197deg, transparent 197deg 203deg,
+      #000 203deg 204deg, transparent 204deg 210deg,
+      #000 210deg 211deg, transparent 211deg 217deg,
+      #000 217deg 218deg, transparent 218deg 224deg,
+      #000 224deg 225deg, transparent 225deg 231deg,
+      #000 231deg 232deg, transparent 232deg 238deg,
+      #000 238deg 239deg, transparent 239deg 245deg,
+      #000 245deg 246deg, transparent 246deg 252deg,
+      #000 252deg 253deg, transparent 253deg 259deg,
+      #000 259deg 260deg, transparent 260deg 266deg,
+      #000 266deg 267deg, transparent 267deg 273deg,
+      #000 273deg 274deg, transparent 274deg 280deg,
+      #000 280deg 281deg, transparent 281deg 287deg,
+      #000 287deg 288deg, transparent 288deg 294deg,
+      #000 294deg 295deg, transparent 295deg 301deg,
+      #000 301deg 302deg, transparent 302deg 308deg,
+      #000 308deg 309deg, transparent 309deg 315deg,
+      #000 315deg 316deg, transparent 316deg 322deg,
+      #000 322deg 323deg, transparent 323deg 329deg,
+      #000 329deg 330deg, transparent 330deg 336deg,
+      #000 336deg 337deg, transparent 337deg 343deg,
+      #000 343deg 344deg, transparent 344deg 350deg,
+      #000 350deg 351deg, transparent 351deg 357deg,
+      #000 357deg 358deg, transparent 358deg 360deg
+    );
+  }
+
+  /* ======================================================
+     Layout
+     ====================================================== */
+  .app {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    padding: 24px 16px;
+  }
+
+  /* ======================================================
+     Header
+     ====================================================== */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .header-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: var(--black);
+    color: var(--white);
+    padding: 4px 10px;
+    margin-bottom: 12px;
+  }
+
+  .header h1 {
+    font-size: clamp(36px, 8vw, 56px);
+    font-weight: 900;
+    line-height: 0.95;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .header h1 .title-red {
+    color: var(--red);
+    display: block;
+  }
+
+  .header h1::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--black);
+  }
+
+  .header-sub {
+    margin-top: 18px;
+    font-size: 13px;
+    opacity: 0.6;
+    font-style: italic;
+  }
+
+  /* ======================================================
+     Panels (comic book style)
+     ====================================================== */
+  .panel {
+    background: var(--panel);
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .panel-label {
+    position: absolute;
+    top: -13px;
+    left: 16px;
+    background: var(--red);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border: 2px solid var(--black);
+  }
+
+  /* ======================================================
+     Form elements
+     ====================================================== */
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: var(--font);
+    font-size: 14px;
+    background: var(--white);
+    border: var(--border);
+    outline: none;
+    transition: box-shadow 0.1s;
+  }
+
+  .field input:focus {
+    box-shadow: var(--shadow);
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border: var(--border);
+    box-shadow: var(--shadow);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--black);
+  }
+
+  .btn-primary {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .btn-secondary {
+    background: var(--white);
+    color: var(--black);
+    margin-top: 10px;
+  }
+
+  .btn-danger {
+    background: var(--red);
+    color: var(--white);
+  }
+
+  .toggle-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+  }
+
+  .toggle-link span {
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .toggle-link span:hover {
+    color: var(--red);
+  }
+
+  /* ======================================================
+     Error / Info messages
+     ====================================================== */
+  .msg {
+    padding: 10px 14px;
+    border: 2px solid var(--black);
+    font-size: 13px;
+    margin-bottom: 14px;
+    font-weight: bold;
+  }
+
+  .msg-error { background: var(--red); color: var(--white); }
+  .msg-info  { background: var(--ink); color: var(--white); }
+
+  /* ======================================================
+     Slots screen
+     ====================================================== */
+  #screen-slots { display: none; }
+
+  .slots-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .slots-header h2 {
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .logout-btn {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: none;
+    border: 2px solid var(--black);
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .logout-btn:hover {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .slot-card {
+    border: var(--border);
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    min-height: 72px;
+  }
+
+  .slot-number {
+    width: 48px;
+    background: var(--black);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .slot-body {
+    flex: 1;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slot-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .slot-meta {
+    font-size: 11px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .slot-empty .slot-title {
+    opacity: 0.4;
+    font-style: italic;
+  }
+
+  .slot-actions {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--black);
+  }
+
+  .slot-btn {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    padding: 0 14px;
+    flex: 1;
+    background: none;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .slot-btn:not(:last-child) {
+    border-bottom: 2px solid var(--black);
+  }
+
+  .slot-btn:hover { background: var(--black); color: var(--white); }
+  .slot-btn.red:hover { background: var(--red); color: var(--white); }
+
+  /* ======================================================
+     Spinner (minimal)
+     ====================================================== */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ======================================================
+     User badge
+     ====================================================== */
+  .user-badge {
+    font-size: 12px;
+    background: var(--ink);
+    color: var(--white);
+    display: inline-block;
+    padding: 3px 10px;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="speed-lines"></div>
+
+<div class="app">
+
+  <!-- ======================================================
+       Auth Screen
+       ====================================================== -->
+  <div id="screen-auth">
+    <div class="header">
+      <div class="header-label">Visual Novel RPG</div>
+      <h1>
+        Status<span class="title-red">Zero</span>
+      </h1>
+      <p class="header-sub">a historia e sua. ou quase isso.</p>
+    </div>
+
+    <div class="panel" id="auth-panel">
+      <span class="panel-label" id="auth-panel-label">Entrar</span>
+      <div id="auth-msg" style="display:none" class="msg"></div>
+
+      <div class="field">
+        <label for="inp-email">Email</label>
+        <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email" />
+      </div>
+
+      <div class="field" id="field-username" style="display:none">
+        <label for="inp-username">Username</label>
+        <input type="text" id="inp-username" placeholder="como te chamam" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label for="inp-password">Senha</label>
+        <input type="password" id="inp-password" placeholder="sua senha" autocomplete="current-password" />
+      </div>
+
+      <button class="btn btn-primary" id="btn-auth" onclick="handleAuth()">Entrar</button>
+      <div class="toggle-link">
+        <span id="toggle-auth" onclick="toggleAuthMode()">Nao tem conta? Cadastre-se</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       Slots Screen
+       ====================================================== -->
+  <div id="screen-slots">
+    <div class="slots-header">
+      <div>
+        <div class="user-badge" id="user-badge">usuario</div>
+        <h2>Escolha a Historia</h2>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sair</button>
+    </div>
+
+    <div id="slots-msg" style="display:none" class="msg"></div>
+    <div id="slots-list"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// Config - replace with your actual Supabase project values
+// ============================================================
+const SUPABASE_URL   = "https://bvuxdtcmsakizqigneuk.supabase.co";
+const SUPABASE_ANON  = "sb_publishable_vlCgrTTr5m49efwcAqsfLA_E4j86-Ky";
+const API_BASE       = "http://localhost:8000";  // FastAPI backend
+
+// ============================================================
+// State
+// ============================================================
+let authMode   = "login";   // "login" | "register"
+let authToken  = null;
+let currentUser = null;
+
+// ============================================================
+// Supabase Auth helpers (direct REST, no SDK dependency)
+// ============================================================
+
+async function supabaseSignUp(email, password, username) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON,
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      data: { username },
+    }),
+  });
+  return res.json();
+}
+
+async function supabaseSignIn(email, password) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON,
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  return res.json();
+}
+
+// ============================================================
+// API helpers
+// ============================================================
+
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: {
+      "Authorization": `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(`${API_BASE}${path}`, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Erro desconhecido");
+  return data;
+}
+
+// ============================================================
+// Auth
+// ============================================================
+
+function toggleAuthMode() {
+  authMode = authMode === "login" ? "register" : "login";
+  document.getElementById("auth-panel-label").textContent =
+    authMode === "login" ? "Entrar" : "Cadastro";
+  document.getElementById("btn-auth").textContent =
+    authMode === "login" ? "Entrar" : "Criar conta";
+  document.getElementById("toggle-auth").textContent =
+    authMode === "login" ? "Nao tem conta? Cadastre-se" : "Ja tem conta? Entrar";
+  document.getElementById("field-username").style.display =
+    authMode === "login" ? "none" : "block";
+  clearMsg("auth-msg");
+}
+
+async function handleAuth() {
+  const email    = document.getElementById("inp-email").value.trim();
+  const password = document.getElementById("inp-password").value;
+  const username = document.getElementById("inp-username").value.trim();
+
+  if (!email || !password) {
+    return showMsg("auth-msg", "Preencha email e senha.", "error");
+  }
+
+  setBtnLoading("btn-auth", true);
+  clearMsg("auth-msg");
+
+  try {
+    let data;
+    if (authMode === "register") {
+      if (!username) return showMsg("auth-msg", "Escolha um username.", "error");
+      data = await supabaseSignUp(email, password, username);
+      if (data.error) throw new Error(data.error.message || data.msg);
+      showMsg("auth-msg", "Conta criada! Verifique seu email e entrar.", "info");
+      return;
+    } else {
+      data = await supabaseSignIn(email, password);
+      if (data.error || data.error_description)
+        throw new Error(data.error_description || data.error);
+    }
+
+    authToken = data.access_token;
+    currentUser = data.user;
+    enterSlotsScreen();
+
+  } catch (err) {
+    showMsg("auth-msg", err.message, "error");
+  } finally {
+    setBtnLoading("btn-auth", false);
+  }
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  document.getElementById("screen-slots").style.display = "none";
+  document.getElementById("screen-auth").style.display = "block";
+  document.getElementById("inp-password").value = "";
+  clearMsg("auth-msg");
+}
+
+// ============================================================
+// Slots
+// ============================================================
+
+async function enterSlotsScreen() {
+  document.getElementById("screen-auth").style.display = "none";
+  document.getElementById("screen-slots").style.display = "block";
+  await loadSlots();
+}
+
+async function loadSlots() {
+  try {
+    const profile = await api("GET", "/profile");
+    document.getElementById("user-badge").textContent = profile.username;
+  } catch (_) {}
+
+  clearMsg("slots-msg");
+  const container = document.getElementById("slots-list");
+  container.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
+
+  try {
+    const slots = await api("GET", "/slots");
+    renderSlots(slots);
+  } catch (err) {
+    showMsg("slots-msg", err.message, "error");
+    container.innerHTML = "";
+  }
+}
+
+function renderSlots(slots) {
+  const container = document.getElementById("slots-list");
+  container.innerHTML = "";
+
+  for (const slot of slots) {
+    const card = document.createElement("div");
+    card.className = "slot-card" + (slot.occupied ? "" : " slot-empty");
+
+    if (slot.occupied) {
+      const phase = slot.current_phase;
+      const phaseIcons = { morning: "Manha", afternoon: "Tarde", night: "Noite" };
+      card.innerHTML = `
+        <div class="slot-number">${slot.slot_number}</div>
+        <div class="slot-body">
+          <div class="slot-title">${escHtml(slot.title)}</div>
+          <div class="slot-meta">Dia ${slot.current_day} &bull; ${phaseIcons[phase] || phase}</div>
+        </div>
+        <div class="slot-actions">
+          <button class="slot-btn" onclick="openSlot('${slot.id}')">Jogar</button>
+          <button class="slot-btn red" onclick="confirmDelete(${slot.slot_number})">Apagar</button>
+        </div>
+      `;
+    } else {
+      card.innerHTML = `
+        <div class="slot-number">${slot.slot_number}</div>
+        <div class="slot-body">
+          <div class="slot-title">Vazio</div>
+        </div>
+        <div class="slot-actions">
+          <button class="slot-btn" onclick="createSlot(${slot.slot_number})">Novo</button>
+        </div>
+      `;
+    }
+
+    container.appendChild(card);
+  }
+}
+
+async function createSlot(slotNumber) {
+  const title = prompt("Nome da historia (ou deixe em branco):");
+  if (title === null) return;
+  try {
+    await api("POST", "/slots", {
+      slot_number: slotNumber,
+      title: title || "Nova Historia",
+    });
+    await loadSlots();
+  } catch (err) {
+    showMsg("slots-msg", err.message, "error");
+  }
+}
+
+async function confirmDelete(slotNumber) {
+  if (!confirm(`Apagar o slot ${slotNumber}? Isso e permanente.`)) return;
+  try {
+    await api("DELETE", `/slots/${slotNumber}`);
+    await loadSlots();
+  } catch (err) {
+    showMsg("slots-msg", err.message, "error");
+  }
+}
+
+function openSlot(slotId) {
+  // Placeholder - will open the game screen
+  alert(`[PLACEHOLDER] Abrindo slot ${slotId}.\nA tela de jogo ainda nao foi implementada.`);
+}
+
+// ============================================================
+// UI Utilities
+// ============================================================
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = "msg msg-" + type;
+  el.style.display = "block";
+}
+
+function clearMsg(id) {
+  const el = document.getElementById(id);
+  el.style.display = "none";
+  el.textContent = "";
+}
+
+function setBtnLoading(id, loading) {
+  const btn = document.getElementById(id);
+  if (loading) {
+    btn.dataset.originalText = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> Aguarda...';
+    btn.disabled = true;
+  } else {
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+    btn.disabled = false;
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+</script>
+</body>
+</html>
