@@ -240,6 +240,8 @@
       font-size: 12px;
       margin-bottom: 12px;
       font-weight: bold;
+      display: flex;
+      justify-content: space-between;
     }
 
     .msg-error {
@@ -732,7 +734,10 @@
       </div>
       <div class="panel">
         <span class="panel-label" id="auth-panel-label">Entrar</span>
-        <div id="auth-msg" style="display:none" class="msg"></div>
+        <div id="auth-msg-wrapper" style="display:none; align-items:center; gap:10px; margin-bottom:12px;">
+          <div id="auth-msg" class="msg" style="margin-bottom:0; flex:1;"></div>
+          <img src="/frontend/assets/boy.png" style="width:48px; height:48px; object-fit:contain; flex-shrink:0;" />
+        </div>
         <div class="field"><label>Email</label><input type="email" id="inp-email" placeholder="seu@email.com" /></div>
         <div class="field" id="field-username" style="display:none"><label>Username</label><input type="text"
             id="inp-username" placeholder="como te chamam" /></div>
@@ -1456,8 +1461,32 @@
       el.value = v;
       return v;
     }
-    function showMsg(id, text, type) { const el = document.getElementById(id); if (!el) return; el.textContent = text; el.className = "msg msg-" + type; el.style.display = "block"; }
-    function clearMsg(id) { const el = document.getElementById(id); if (el) { el.style.display = "none"; el.textContent = ""; } }
+    
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = "msg msg-" + type;
+      el.style.display = "block";
+
+      if (id === "auth-msg") {
+        const wrapper = document.getElementById("auth-msg-wrapper");
+        if (wrapper) wrapper.style.display = "flex";
+      }
+    }
+    function clearMsg(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = "none";
+        el.textContent = "";
+      }
+
+      if (id === "auth-msg") {
+        const wrapper = document.getElementById("auth-msg-wrapper");
+        if (wrapper) wrapper.style.display = "none";
+      }
+    }
+
     function setBtnLoading(id, loading) {
       const btn = document.getElementById(id);
       if (loading) { btn.dataset.orig = btn.textContent; btn.innerHTML = '<span class="spinner"></span>Aguarda...'; btn.disabled = true; }
