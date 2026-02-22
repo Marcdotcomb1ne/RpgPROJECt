@@ -135,9 +135,8 @@ class CreateBackgroundRequest(BaseModel):
     description: str = Field(default="", max_length=500)
 
 
+# FIX: Removido save_id — já vem pela URL da rota (/slots/{slot_id}/promote-npc)
 class PromoteNPCRequest(BaseModel):
-    """Promove um NPC emergente a personagem permanente do pack."""
-    save_id: str
     npc_name: str
     image_url: Optional[str] = Field(default=None)
 

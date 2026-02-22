@@ -254,6 +254,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
+      position: relative;
     }
 
     .emergent-silhouette {
@@ -866,6 +867,9 @@
     let authToken = sessionStorage.getItem("auth_token");
     let logOpen = false, allEvents = [], promotingNpc = null;
 
+    // FIX: cache de personagens do Pack para resolver imagens no reload
+    let packCharactersCache = [];
+
     const PHASES = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
 
     // ============================================================
@@ -874,7 +878,7 @@
     window.addEventListener("DOMContentLoaded", async () => {
       if (!slotId || !authToken) { window.location.href = "index.html"; return; }
 
-      // Check for opening narration from new save
+      // Narração de abertura vinda de save novo
       const opening = sessionStorage.getItem("opening_narration");
       if (opening) {
         sessionStorage.removeItem("opening_narration");
@@ -911,9 +915,37 @@
         updateRelationships(ws.relationships || {});
         updateNPCs(ws.emergent_npcs || {});
         if (slot.memory_summary) document.getElementById("memory-text").textContent = slot.memory_summary;
-        if (ws.scene_type === "character_focus" && (ws.active_characters || []).length) {
-          renderCharsByName(ws.active_characters, [], ws.emergent_npcs || {});
+
+        // FIX: carrega personagens do Pack para resolver imagens ao reabrir save
+        if (slot.pack_id) {
+          try {
+            const world = await api("GET", `/worlds/${slot.pack_id}`);
+            packCharactersCache = world.characters || [];
+          } catch (_) {
+            packCharactersCache = [];
+          }
         }
+
+        // FIX: usa packCharactersCache para renderizar personagem em tela corretamente
+        if (ws.scene_type === "character_focus" && (ws.active_characters || []).length) {
+          renderCharsByName(ws.active_characters, packCharactersCache, ws.emergent_npcs || {});
+          const bg = document.getElementById("vn-bg");
+          bg.classList.remove("narrative-only");
+          document.getElementById("vn-chars").classList.remove("hidden");
+        }
+
+        // Restaura background salvo
+        if (ws.current_background && packCharactersCache.length === 0 && slot.pack_id) {
+          // já carregou acima
+        }
+        if (ws.current_background) {
+          try {
+            const world = await api("GET", `/worlds/${slot.pack_id}`);
+            const bg = (world.backgrounds || []).find(b => b.name.toLowerCase() === ws.current_background.toLowerCase());
+            if (bg && bg.image_url) setBgImage(bg.image_url);
+          } catch (_) { }
+        }
+
       } catch (err) {
         if (err.message !== "Sessao expirada") setNarration("SISTEMA", `Erro ao carregar: ${err.message}`);
       }
@@ -925,9 +957,10 @@
         allEvents = events;
         renderLogContent();
         const narrations = events.filter(e => e.type === "narration");
-        if (narrations.length && !sessionStorage.getItem("showed_opening")) {
+        const hasOpening = sessionStorage.getItem("opening_narration");
+        if (narrations.length && !hasOpening) {
           setNarration("NARRADOR", narrations[narrations.length - 1].content);
-        } else if (!narrations.length) {
+        } else if (!narrations.length && !hasOpening) {
           setNarration("NARRADOR", "A história começa aqui. O que você faz?");
         }
       } catch (_) { }
@@ -951,6 +984,10 @@
         const result = await api("POST", `/slots/${slotId}/action`, { input: raw });
         applyResult(result);
         addEventToLog({ type: "narration", content: result.narration });
+        // FIX: atualiza cache de personagens caso venha no resultado
+        if (result.pack_characters && result.pack_characters.length) {
+          packCharactersCache = result.pack_characters;
+        }
         await loadArcs();
       } catch (err) {
         document.getElementById("vn-text").classList.remove("typing");
@@ -979,7 +1016,9 @@
       updateTime(result.current_day, result.current_phase);
       updateRelationships((result.world_state || {}).relationships || {});
       updateNPCs((result.world_state || {}).emergent_npcs || {});
-      if ((result.world_state || {}).memory_summary) document.getElementById("memory-text").textContent = result.world_state.memory_summary;
+      if ((result.world_state || {}).memory_summary) {
+        document.getElementById("memory-text").textContent = result.world_state.memory_summary;
+      }
 
       // Background
       if (result.current_background_url) setBgImage(result.current_background_url);
@@ -992,9 +1031,9 @@
       if (sceneType === "character_focus" && result.active_characters && result.active_characters.length) {
         bg.classList.remove("narrative-only");
         chars.classList.remove("hidden");
+        // result.active_characters já vem como objetos {name, image_url, is_emergent} do backend
         renderCharacters(result.active_characters, result.world_state?.emergent_npcs || {});
       } else {
-        // Narrative scene
         bg.classList.add("narrative-only");
         chars.classList.add("hidden");
         chars.innerHTML = "";
@@ -1016,44 +1055,53 @@
       if (url) { img.src = url; img.style.display = "block"; }
     }
 
+    // Renderiza personagens vindos do backend (objetos {name, image_url, is_emergent})
     function renderCharacters(chars, emergentNpcs) {
       const area = document.getElementById("vn-chars");
       area.innerHTML = "";
-      chars.slice(0, 1).forEach(c => { // max 1 personagem
-        const div = document.createElement("div");
-        div.className = "vn-char";
-        if (c.image_url) {
-          const img = document.createElement("img");
-          img.src = c.image_url; img.alt = c.name;
-          img.onerror = () => buildPlaceholder(div, c.name, c.is_emergent);
-          div.appendChild(img);
-        } else {
-          buildPlaceholder(div, c.name, c.is_emergent);
-        }
-        area.appendChild(div);
-      });
+      if (!chars || !chars.length) return;
+
+      const c = chars[0]; // max 1
+      const div = document.createElement("div");
+      div.className = "vn-char";
+
+      if (c.image_url) {
+        const img = document.createElement("img");
+        img.src = c.image_url;
+        img.alt = c.name;
+        img.onerror = () => { div.innerHTML = ""; buildPlaceholder(div, c.name, c.is_emergent); };
+        div.appendChild(img);
+      } else {
+        buildPlaceholder(div, c.name, c.is_emergent);
+      }
+      area.appendChild(div);
     }
 
+    // FIX: renderiza personagens pelo nome usando packCharactersCache para resolver imagens
     function renderCharsByName(names, characters, emergentNpcs) {
       const area = document.getElementById("vn-chars");
       area.innerHTML = "";
       if (!names || !names.length) return;
+
       const charMap = {};
       (characters || []).forEach(c => charMap[c.name] = c);
+
       const name = names[0];
       const div = document.createElement("div");
       div.className = "vn-char";
       const c = charMap[name];
+
       if (c && c.image_url) {
-        const img = document.createElement("img"); img.src = c.image_url; img.alt = name;
-        img.onerror = () => buildPlaceholder(div, name, false);
+        const img = document.createElement("img");
+        img.src = c.image_url;
+        img.alt = name;
+        img.onerror = () => { div.innerHTML = ""; buildPlaceholder(div, name, false); };
         div.appendChild(img);
       } else {
         const isEmergent = !c;
         buildPlaceholder(div, name, isEmergent);
       }
       area.appendChild(div);
-      document.getElementById("vn-chars").classList.remove("hidden");
     }
 
     function buildPlaceholder(div, name, isEmergent) {
@@ -1063,7 +1111,6 @@
         const label = document.createElement("div");
         label.style.cssText = "position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9px;opacity:0.5";
         label.textContent = name;
-        div.style.position = "relative";
         div.appendChild(label);
       } else {
         div.innerHTML = `<div class="vn-char-placeholder"><div class="char-icon">👤</div><div>${escHtml(name)}</div></div>`;
@@ -1096,7 +1143,10 @@
     function updateRelationships(rels) {
       const el = document.getElementById("rels-list");
       const entries = Object.entries(rels || {});
-      if (!entries.length) { el.innerHTML = '<span style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</span>'; return; }
+      if (!entries.length) {
+        el.innerHTML = '<span style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</span>';
+        return;
+      }
       el.innerHTML = entries.map(([name, data]) => {
         const info = typeof data === "object" ? data : {};
         const aff = info.affinity || 0;
@@ -1107,7 +1157,10 @@
     function updateNPCs(npcs) {
       const el = document.getElementById("npcs-list");
       const entries = Object.entries(npcs || {});
-      if (!entries.length) { el.innerHTML = '<span style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</span>'; return; }
+      if (!entries.length) {
+        el.innerHTML = '<span style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</span>';
+        return;
+      }
       el.innerHTML = entries.map(([name, data]) => {
         const d = typeof data === "object" ? data : {};
         const count = d.mention_count || 1;
@@ -1115,13 +1168,19 @@
         return `<div class="npc-entry${promoted ? " promoted" : ""}">
           <span class="npc-name">${escHtml(name)} ${count >= 3 && !promoted ? '⭐' : ''}</span>
           <span class="npc-status">${escHtml(d.status || "neutro")} · ${count}x mencionado</span>
-          ${!promoted ? `<button class="npc-promote-btn" onclick="openPromoteModal('${escHtml(name)}')">→ Tornar Permanente</button>` : '<span style="font-size:9px;opacity:0.4">Promovido ✓</span>'}
+          ${!promoted
+            ? `<button class="npc-promote-btn" onclick="openPromoteModal('${escHtml(name)}')">→ Tornar Permanente</button>`
+            : '<span style="font-size:9px;opacity:0.4">Promovido ✓</span>'
+          }
         </div>`;
       }).join("");
     }
     function renderArcs(arcs) {
       const el = document.getElementById("arcs-list");
-      if (!arcs.length) { el.innerHTML = '<div style="font-size:10px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>'; return; }
+      if (!arcs.length) {
+        el.innerHTML = '<div style="font-size:10px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>';
+        return;
+      }
       el.innerHTML = arcs.map(a => `
         <div class="arc-entry ${a.status}">
           <span class="arc-name">${escHtml(a.title)}</span>
@@ -1132,10 +1191,18 @@
     // ============================================================
     // Log
     // ============================================================
-    function toggleLog() { logOpen = !logOpen; document.getElementById("vn-log").classList.toggle("open", logOpen); if (logOpen) renderLogContent(); }
-    function addEventToLog(ev) { allEvents.push(ev); if (logOpen) renderLogContent(); }
+    function toggleLog() {
+      logOpen = !logOpen;
+      document.getElementById("vn-log").classList.toggle("open", logOpen);
+      if (logOpen) renderLogContent();
+    }
+    function addEventToLog(ev) {
+      allEvents.push(ev);
+      if (logOpen) renderLogContent();
+    }
     function renderLogContent() {
-      const c = document.getElementById("log-content"); c.innerHTML = "";
+      const c = document.getElementById("log-content");
+      c.innerHTML = "";
       for (const ev of allEvents) {
         const entry = document.createElement("div");
         entry.className = "log-entry" + (ev.type === "player_action" ? " player" : "");
@@ -1145,13 +1212,15 @@
         else if (ev.type === "system") bubble.className = "log-bubble system-text";
         else bubble.className = "log-bubble narration";
         bubble.textContent = ev.content;
-        entry.appendChild(bubble); c.appendChild(entry);
+        entry.appendChild(bubble);
+        c.appendChild(entry);
       }
       c.scrollTop = c.scrollHeight;
     }
 
     // ============================================================
     // Promote NPC Modal
+    // FIX: removido save_id do body — a rota usa slot_id da URL
     // ============================================================
     function openPromoteModal(npcName) {
       promotingNpc = npcName;
@@ -1159,26 +1228,41 @@
       document.getElementById("promote-img-url").value = "";
       document.getElementById("promote-modal").classList.add("open");
     }
-    function closePromoteModal() { promotingNpc = null; document.getElementById("promote-modal").classList.remove("open"); }
+    function closePromoteModal() {
+      promotingNpc = null;
+      document.getElementById("promote-modal").classList.remove("open");
+    }
     async function confirmPromote() {
       if (!promotingNpc) return;
       const imgUrl = document.getElementById("promote-img-url").value.trim() || null;
       try {
-        await api("POST", `/slots/${slotId}/promote-npc`, { npc_name: promotingNpc, image_url: imgUrl });
+        // FIX: body correto sem save_id
+        await api("POST", `/slots/${slotId}/promote-npc`, {
+          npc_name: promotingNpc,
+          image_url: imgUrl,
+        });
         closePromoteModal();
         await loadSlot();
-      } catch (err) { alert("Erro: " + err.message); }
+      } catch (err) {
+        alert("Erro: " + err.message);
+      }
     }
 
     // ============================================================
     // Helpers
     // ============================================================
     function setSending(loading) {
-      const btn = document.getElementById("send-btn"); const ta = document.getElementById("inp-action");
-      btn.disabled = loading; ta.disabled = loading; btn.textContent = loading ? "..." : "▶";
+      const btn = document.getElementById("send-btn");
+      const ta = document.getElementById("inp-action");
+      btn.disabled = loading;
+      ta.disabled = loading;
+      btn.textContent = loading ? "..." : "▶";
     }
     function goBack() { window.location.href = "index.html"; }
-    function escHtml(s) { if (!s) return ""; return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function escHtml(s) {
+      if (!s) return "";
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
   </script>
 </body>
 

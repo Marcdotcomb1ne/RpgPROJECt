@@ -17,7 +17,7 @@ from ai_engine import (
 )
 
 SUMMARIZE_EVERY = 10
-NPC_PROMOTE_THRESHOLD = 3  # aparições para virar NPC permanente automaticamente
+ARC_CHECK_EVERY = 3  # chama arc_analyst a cada N ações (evita chamada em toda ação)
 
 
 async def _get_slot(db: SupabaseClient, save_id: str, user_id: str) -> dict:
@@ -50,11 +50,6 @@ async def _get_pack_context(db: SupabaseClient, pack_id: str | None) -> tuple[di
 
 def _resolve_scene(world_state: WorldState, ai_response: AIResponse, characters: list[dict]) -> dict:
     """Resolve URLs e dados de personagens/backgrounds para o frontend."""
-    # Background URL
-    bg_url = None
-    # (backgrounds são passados ao caller para não duplicar lookup)
-
-    # Personagens ativos
     active_char_data = []
     if ai_response.scene_type == "character_focus" and ai_response.active_characters:
         char_map = {c["name"]: c for c in characters}
@@ -88,7 +83,7 @@ async def initialize_save(
     """
     slot_row = await _get_slot(db, save_id, user_id)
     pack_id = slot_row.get("pack_id")
-    player_info = slot_row.get("player_info") or {
+    player_info = {
         "name": slot_row.get("player_name", "Protagonista"),
         "description": slot_row.get("player_description", ""),
     }
@@ -217,7 +212,6 @@ async def process_action(
     emergent = dict(state_dict.get("emergent_npcs", {}))
     for npc_name, npc_data in (ai_response.emergent_npcs or {}).items():
         if npc_name in emergent:
-            # Incrementa mention_count e atualiza dados
             existing = dict(emergent[npc_name])
             existing["mention_count"] = existing.get("mention_count", 1) + 1
             existing.update({k: v for k, v in npc_data.items() if k != "mention_count"})
@@ -250,14 +244,15 @@ async def process_action(
         "content": ai_response.narration,
     }).execute()
 
-    # 13. Análise de arcos
-    arc_result = await (
-        db.table("story_arcs").select("*")
-        .eq("save_id", save_id).eq("status", "active").limit(1).execute()
-    )
-    active_arc = arc_result.first()
-    arc_response = await call_arc_analyst(world_state, recent_events, active_arc)
-    await _handle_arc_signal(db, save_id, world_state, arc_response, active_arc)
+    # 13. Análise de arcos — FIX: só chama a cada ARC_CHECK_EVERY ações
+    if world_state.event_counter_arc % ARC_CHECK_EVERY == 0:
+        arc_result = await (
+            db.table("story_arcs").select("*")
+            .eq("save_id", save_id).eq("status", "active").limit(1).execute()
+        )
+        active_arc = arc_result.first()
+        arc_response = await call_arc_analyst(world_state, recent_events, active_arc)
+        await _handle_arc_signal(db, save_id, world_state, arc_response, active_arc)
 
     # 14. Sumarização periódica
     if world_state.event_counter_global % SUMMARIZE_EVERY == 0:
@@ -283,6 +278,7 @@ async def process_action(
                 bg_url = bg.get("image_url")
                 break
 
+    # FIX: passa characters para _resolve_scene para resolver imagens corretamente
     scene_data = _resolve_scene(world_state, ai_response, characters)
 
     return {
@@ -294,6 +290,8 @@ async def process_action(
         "current_background_url": bg_url,
         "active_characters": scene_data["active_char_data"],
         "emergent_npcs": world_state.emergent_npcs,
+        # FIX: inclui lista de personagens do Pack para o frontend recarregar imagens no boot
+        "pack_characters": [{"name": c["name"], "image_url": c.get("image_url")} for c in characters],
     }
 
 
@@ -312,7 +310,6 @@ async def promote_npc(
     if not pack_id:
         raise ValueError("Este save não tem um Pack vinculado")
 
-    # Verifica se o usuário é dono do Pack
     pack = (await db.table("roleplay_worlds").select("owner_id").eq("id", pack_id).execute()).first()
     if not pack or pack["owner_id"] != user_id:
         raise ValueError("Apenas o criador do Pack pode adicionar personagens permanentes")
@@ -321,7 +318,6 @@ async def promote_npc(
     if not npc_data:
         raise ValueError(f"NPC '{npc_name}' não encontrado nos NPCs emergentes")
 
-    # Cria personagem no Pack
     personality = {
         "description": npc_data.get("description", ""),
         "personality": npc_data.get("personality", ""),

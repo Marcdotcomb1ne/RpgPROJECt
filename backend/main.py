@@ -21,7 +21,7 @@ from game_service import (
     advance_phase, initialize_save, promote_npc,
 )
 
-app = FastAPI(title="RPG Manhwa API", version="0.3.0")
+app = FastAPI(title="RPG Manhwa API", version="0.3.1")
 
 ALLOWED_ORIGINS = [
     "http://localhost", "http://localhost:3000",
@@ -321,7 +321,13 @@ class ActionRequest(BaseModel):
 @app.post("/slots/{slot_id}/action", tags=["game"])
 async def player_action(slot_id: str, body: ActionRequest, user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
     try:
-        return await process_action(db=db, save_id=slot_id, user_id=user["user_id"], raw_input=body.input)
+        result = await process_action(db=db, save_id=slot_id, user_id=user["user_id"], raw_input=body.input)
+        # FIX: Atualiza last_played a cada ação
+        try:
+            await db.table("save_slots").update({"last_played": "now()"}).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
+        except Exception:
+            pass
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -332,7 +338,13 @@ async def player_action(slot_id: str, body: ActionRequest, user: dict = Depends(
 async def advance_time(slot_id: str, user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
     """Avança a fase do dia sem processar ação do jogador."""
     try:
-        return await advance_phase(db=db, save_id=slot_id, user_id=user["user_id"])
+        result = await advance_phase(db=db, save_id=slot_id, user_id=user["user_id"])
+        # FIX: Atualiza last_played ao avançar fase também
+        try:
+            await db.table("save_slots").update({"last_played": "now()"}).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
+        except Exception:
+            pass
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -349,6 +361,7 @@ async def promote_npc_endpoint(slot_id: str, body: PromoteNPCRequest, user: dict
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# FIX: Removida rota duplicada de /world-state. Mantida apenas uma versão com Pydantic model correto.
 class PatchWorldStateRequest(BaseModel):
     world_state_patch: dict
 
@@ -371,35 +384,11 @@ async def patch_world_state(
         if key in allowed and isinstance(val, (int, float)):
             ws[key] = int(val)
 
-    # Validate via schema
     validated = WorldState(**ws)
     await db.table("save_slots").update({
         "world_state": validated.model_dump(),
     }).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
     return {"message": "World state atualizado", "world_state": validated.model_dump()}
-
-
-@app.patch("/slots/{slot_id}/world-state", tags=["game"])
-async def patch_world_state(
-    slot_id: str,
-    body: dict,
-    user: dict = Depends(get_current_user),
-    db: SupabaseClient = Depends(get_db),
-):
-    """Aplica patch parcial no world_state (ex: atributos iniciais do personagem)."""
-    from fastapi import Body
-    row = (await db.table("save_slots").select("world_state").eq("id", slot_id).eq("user_id", user["user_id"]).execute()).first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Slot não encontrado")
-    ws = dict(row["world_state"])
-    patch = body.get("world_state_patch", {})
-    allowed = {"sanity", "confidence", "violence", "social_status", "meta_awareness"}
-    for key, val in patch.items():
-        if key in allowed and isinstance(val, (int, float)):
-            ws[key] = int(val)
-    validated = WorldState(**ws)
-    await db.table("save_slots").update({"world_state": validated.model_dump()}).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
-    return {"world_state": validated.model_dump()}
 
 
 @app.get("/slots/{slot_id}/history", tags=["game"])
