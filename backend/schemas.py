@@ -9,18 +9,33 @@ import re
 # ============================================================
 
 class WorldState(BaseModel):
+    # Stats do jogador
     sanity: int = Field(default=100, ge=0, le=100)
     confidence: int = Field(default=50, ge=0, le=100)
     violence: int = Field(default=0, ge=0, le=100)
     social_status: int = Field(default=0, ge=-100, le=100)
     meta_awareness: int = Field(default=0, ge=0, le=100)
+
+    # Tempo
     current_day: int = Field(default=1, ge=1)
-    current_phase: str = Field(default="morning")
+    current_phase: str = Field(default="morning")  # morning | afternoon | night
+
+    # Contadores
     event_counter_global: int = Field(default=0, ge=0)
     event_counter_arc: int = Field(default=0, ge=0)
+
+    # Relacionamentos com personagens do Pack (persistentes)
     relationships: dict[str, Any] = Field(default_factory=dict)
+
+    # NPCs emergentes criados pela IA durante o save
+    emergent_npcs: dict[str, Any] = Field(default_factory=dict)
+
+    # Cena atual
     current_background: Optional[str] = Field(default=None)
     active_characters: list[str] = Field(default_factory=list)
+
+    # Tipo da cena: "narrative" (só texto) | "character_focus" (personagem em tela)
+    scene_type: str = Field(default="narrative")
 
     def next_phase(self) -> "WorldState":
         phases = ["morning", "afternoon", "night"]
@@ -29,34 +44,26 @@ class WorldState(BaseModel):
             return self.model_copy(update={
                 "current_phase": "morning",
                 "current_day": self.current_day + 1,
+                "active_characters": [],
+                "scene_type": "narrative",
             })
-        return self.model_copy(update={"current_phase": phases[idx + 1]})
+        return self.model_copy(update={
+            "current_phase": phases[idx + 1],
+            "active_characters": [],
+            "scene_type": "narrative",
+        })
 
 
 # ============================================================
 # Save Slots
 # ============================================================
 
-class SaveSlotSummary(BaseModel):
-    id: str
-    slot_number: int
-    title: str
-    created_at: datetime
-    last_played: datetime
-    current_day: int
-    current_phase: str
-
-
-class SaveSlotDetail(SaveSlotSummary):
-    world_state: WorldState
-    memory_summary: str
-    timeline: list[Any]
-
-
 class CreateSlotRequest(BaseModel):
     slot_number: int = Field(..., ge=1, le=5)
     title: str = Field(default="Nova Historia", max_length=80)
     pack_id: Optional[str] = Field(default=None)
+    player_name: str = Field(default="Jogador", max_length=60)
+    player_description: str = Field(default="", max_length=500)
 
 
 class UpdateSlotTitleRequest(BaseModel):
@@ -94,32 +101,7 @@ class PlayerAction(BaseModel):
 
 
 # ============================================================
-# Events
-# ============================================================
-
-class EventEntry(BaseModel):
-    id: str
-    type: str
-    content: str
-    created_at: datetime
-
-
-# ============================================================
-# Story Arcs
-# ============================================================
-
-class StoryArc(BaseModel):
-    id: str
-    title: str
-    start_day: int
-    end_day: Optional[int]
-    status: str
-    summary: str
-    impact: str
-
-
-# ============================================================
-# Roleplay Pack / World
+# Roleplay Pack
 # ============================================================
 
 class CreateWorldRequest(BaseModel):
@@ -139,11 +121,25 @@ class CreateCharacterRequest(BaseModel):
     base_traits_json: dict = Field(default_factory=dict)
 
 
+class UpdateCharacterRequest(BaseModel):
+    name: Optional[str] = Field(default=None, max_length=80)
+    image_url: Optional[str] = Field(default=None)
+    personality_json: Optional[dict] = Field(default=None)
+    base_traits_json: Optional[dict] = Field(default=None)
+
+
 class CreateBackgroundRequest(BaseModel):
     world_id: str
     name: str = Field(..., max_length=80)
     image_url: Optional[str] = Field(default=None)
     description: str = Field(default="", max_length=500)
+
+
+class PromoteNPCRequest(BaseModel):
+    """Promove um NPC emergente a personagem permanente do pack."""
+    save_id: str
+    npc_name: str
+    image_url: Optional[str] = Field(default=None)
 
 
 # ============================================================
@@ -153,10 +149,12 @@ class CreateBackgroundRequest(BaseModel):
 class AIResponse(BaseModel):
     narration: str
     world_state_deltas: dict[str, Any] = Field(default_factory=dict)
-    arc_signal: Optional[str] = None        # "start", "close", or None
+    arc_signal: Optional[str] = None        # "start" | "close" | None
     arc_title: Optional[str] = None
     arc_summary: Optional[str] = None
     memory_update: Optional[str] = None
     relationship_updates: dict[str, Any] = Field(default_factory=dict)
     background_hint: Optional[str] = None
     active_characters: list[str] = Field(default_factory=list)
+    scene_type: str = "narrative"           # "narrative" | "character_focus"
+    emergent_npcs: dict[str, Any] = Field(default_factory=dict)

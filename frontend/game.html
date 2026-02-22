@@ -34,11 +34,11 @@
       overflow: hidden;
     }
 
-    /* ========== TOP BAR ========== */
+    /* ===== TOP BAR ===== */
     .topbar {
       background: var(--black);
-      border-bottom: 1px solid #333;
-      padding: 6px 14px;
+      border-bottom: 1px solid #222;
+      padding: 5px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -47,14 +47,20 @@
     }
 
     .topbar-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 2px;
     }
 
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .topbar-time {
-      font-size: 11px;
+      font-size: 10px;
       opacity: 0.5;
       letter-spacing: 1px;
       text-transform: uppercase;
@@ -62,14 +68,13 @@
 
     .back-btn {
       font-family: var(--font);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 1px;
       background: none;
       border: 1px solid #444;
       color: var(--white);
-      padding: 3px 10px;
+      padding: 3px 9px;
       cursor: pointer;
     }
 
@@ -77,13 +82,13 @@
       border-color: var(--white);
     }
 
-    /* ========== STATS BAR ========== */
+    /* ===== STATS BAR ===== */
     .statsbar {
       background: #111;
       border-bottom: var(--border);
-      padding: 6px 14px;
+      padding: 5px 12px;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-shrink: 0;
       overflow-x: auto;
       z-index: 10;
@@ -93,21 +98,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 52px;
+      min-width: 48px;
     }
 
     .stat-label {
-      font-size: 8px;
+      font-size: 7px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      opacity: 0.5;
-      margin-bottom: 3px;
+      opacity: 0.45;
+      margin-bottom: 2px;
       white-space: nowrap;
     }
 
     .stat-bar-wrap {
       width: 100%;
-      height: 5px;
+      height: 4px;
       background: #333;
       border: 1px solid #444;
     }
@@ -123,12 +128,12 @@
     }
 
     .stat-value {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: bold;
       margin-top: 2px;
     }
 
-    /* ========== MAIN LAYOUT ========== */
+    /* ===== MAIN ===== */
     .main {
       flex: 1;
       display: flex;
@@ -136,7 +141,7 @@
       position: relative;
     }
 
-    /* ========== VISUAL NOVEL SCENE ========== */
+    /* ===== VN SCENE ===== */
     .vn-scene {
       flex: 1;
       position: relative;
@@ -145,91 +150,125 @@
       overflow: hidden;
     }
 
-    /* Background layer */
+    /* Background */
     .vn-bg {
       position: absolute;
       inset: 0;
       background: #0d0d1a;
-      background-image:
-        linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 50%, #0d0d1a 100%);
-      transition: background-image 0.5s ease;
       overflow: hidden;
+      transition: opacity 0.6s;
     }
 
     .vn-bg img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0.6;
+      opacity: 0.55;
+      transition: opacity 0.5s;
     }
 
     .vn-bg::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
+      background: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.75) 100%);
     }
 
-    /* Manga dots overlay */
     .vn-bg::before {
       content: '';
       position: absolute;
       inset: 0;
       z-index: 1;
-      background-image: radial-gradient(circle, #ffffff04 1px, transparent 1px);
+      background-image: radial-gradient(circle, #ffffff03 1px, transparent 1px);
       background-size: 8px 8px;
     }
 
-    /* Character sprites area */
+    /* narrative-only tint */
+    .vn-bg.narrative-only {
+      background: #060610;
+    }
+
+    .vn-bg.narrative-only img {
+      opacity: 0.3;
+    }
+
+    /* Character */
     .vn-chars {
       position: absolute;
-      bottom: 200px;
+      bottom: 195px;
       left: 0;
       right: 0;
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 0;
       z-index: 2;
       pointer-events: none;
+      transition: opacity 0.4s;
+    }
+
+    .vn-chars.hidden {
+      opacity: 0;
     }
 
     .vn-char {
-      position: relative;
       width: 180px;
       height: 280px;
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      animation: charAppear 0.3s ease;
-      transition: filter 0.3s;
+      animation: charIn 0.35s ease;
     }
 
     .vn-char img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.8));
+      filter: drop-shadow(2px 6px 10px rgba(0, 0, 0, 0.9));
     }
 
-    .vn-char .char-placeholder {
-      width: 120px;
-      height: 240px;
-      background: linear-gradient(to bottom, #333, #111);
-      border: 2px solid #444;
+    .vn-char-placeholder {
+      width: 110px;
+      height: 230px;
+      background: linear-gradient(to bottom, #2a2a3e, #111);
+      border: 1px solid #444;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      gap: 6px;
+      font-size: 10px;
       text-align: center;
-      opacity: 0.5;
+      opacity: 0.6;
       padding: 8px;
     }
 
-    @keyframes charAppear {
+    .vn-char-placeholder .char-icon {
+      font-size: 32px;
+      opacity: 0.5;
+    }
+
+    /* NPC emergente — silhueta cinza */
+    .vn-char-emergent {
+      width: 110px;
+      height: 230px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .emergent-silhouette {
+      width: 80px;
+      height: 200px;
+      background: linear-gradient(to bottom, #3a3a3a, #1a1a1a);
+      clip-path: polygon(35% 0%, 65% 0%, 75% 12%, 70% 25%, 75% 35%, 90% 40%, 100% 55%, 95% 80%, 85% 85%, 75% 100%, 25% 100%, 15% 85%, 5% 80%, 0% 55%, 10% 40%, 25% 35%, 30% 25%, 25% 12%);
+      opacity: 0.6;
+      border-bottom: 2px solid #555;
+    }
+
+    @keyframes charIn {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(16px);
       }
 
       to {
@@ -238,68 +277,110 @@
       }
     }
 
-    /* Dialogue Box */
+    /* PHASE TAG — shows in scene */
+    .phase-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 3;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #333;
+      font-size: 10px;
+      padding: 3px 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+    }
+
+    /* ===== DIALOG BOX ===== */
     .vn-dialogbox {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
       z-index: 5;
-      background: rgba(10, 10, 10, 0.92);
-      border-top: 2px solid #333;
+      background: rgba(8, 8, 16, 0.94);
+      border-top: 1px solid #2a2a3a;
       backdrop-filter: blur(4px);
     }
 
-    /* History toggle */
-    .history-toggle {
-      position: absolute;
-      top: -30px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.8);
-      border: 1px solid #444;
-      font-family: var(--font);
-      font-size: 10px;
-      color: #aaa;
-      padding: 3px 10px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+    .dialog-toprow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px 0;
     }
 
-    .history-toggle:hover {
+    .history-btn {
+      font-family: var(--font);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: none;
+      border: 1px solid #333;
+      color: #888;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+
+    .history-btn:hover {
       color: var(--white);
       border-color: var(--white);
     }
 
-    /* Current narration display */
+    .advance-btn {
+      font-family: var(--font);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: none;
+      border: 1px solid #444;
+      color: #aaa;
+      padding: 2px 10px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .advance-btn:hover {
+      background: #1a1a2e;
+      border-color: #666;
+      color: var(--white);
+    }
+
+    .advance-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
     .vn-narration {
-      padding: 14px 18px 4px;
-      min-height: 80px;
-      max-height: 130px;
+      padding: 10px 16px 4px;
+      min-height: 75px;
+      max-height: 120px;
       overflow-y: auto;
     }
 
     .vn-narration::-webkit-scrollbar {
-      width: 3px;
+      width: 2px;
     }
 
     .vn-narration::-webkit-scrollbar-thumb {
       background: #333;
     }
 
-    .vn-speaker-name {
-      font-size: 11px;
+    .vn-speaker {
+      font-size: 10px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 2px;
       color: var(--red);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .vn-text {
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: 13px;
+      line-height: 1.65;
       color: var(--white);
+      white-space: pre-wrap;
     }
 
     .vn-text.typing::after {
@@ -319,55 +400,51 @@
       }
     }
 
-    /* Input area */
     .vn-input {
-      padding: 10px 14px 12px;
-      border-top: 1px solid #222;
+      padding: 8px 12px 10px;
+      border-top: 1px solid #1a1a1a;
     }
 
     .input-hint {
-      font-size: 10px;
-      opacity: 0.35;
-      margin-bottom: 6px;
+      font-size: 9px;
+      opacity: 0.3;
+      margin-bottom: 5px;
       letter-spacing: 0.5px;
     }
 
     .input-row {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
 
     .input-row textarea {
       flex: 1;
       font-family: var(--font);
-      font-size: 13px;
-      background: #1a1a1a;
+      font-size: 12px;
+      background: #111;
       color: var(--white);
       border: var(--border);
-      padding: 8px 10px;
+      padding: 7px 9px;
       resize: none;
-      height: 52px;
+      height: 46px;
       outline: none;
       line-height: 1.4;
     }
 
     .input-row textarea:focus {
-      border-color: #555;
+      border-color: #444;
     }
 
     .send-btn {
       font-family: var(--font);
       font-size: 12px;
       font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
       background: var(--white);
       color: var(--black);
       border: var(--border);
       padding: 0 14px;
       cursor: pointer;
       flex-shrink: 0;
-      transition: background 0.1s, color 0.1s;
     }
 
     .send-btn:hover {
@@ -377,22 +454,22 @@
     }
 
     .send-btn:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: default;
     }
 
-    /* ========== LOG OVERLAY (history) ========== */
-    .vn-log-overlay {
+    /* ===== LOG OVERLAY ===== */
+    .vn-log {
       display: none;
       position: absolute;
       inset: 0;
       z-index: 20;
-      background: rgba(0, 0, 0, 0.95);
+      background: rgba(0, 0, 0, 0.96);
       overflow-y: auto;
-      padding: 16px;
+      padding: 14px;
     }
 
-    .vn-log-overlay.open {
+    .vn-log.open {
       display: block;
     }
 
@@ -401,31 +478,18 @@
       top: 0;
       float: right;
       font-family: var(--font);
-      font-size: 11px;
+      font-size: 10px;
       background: #222;
       border: 1px solid #444;
       color: var(--white);
-      padding: 3px 10px;
+      padding: 3px 9px;
       cursor: pointer;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .log-entry {
-      margin-bottom: 14px;
-      animation: fadeIn 0.2s ease;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-
-      to {
-        opacity: 1;
-      }
+      margin-bottom: 12px;
     }
 
     .log-entry.player {
@@ -434,18 +498,16 @@
 
     .log-bubble {
       display: inline-block;
-      max-width: 90%;
-      padding: 8px 12px;
+      max-width: 92%;
+      padding: 7px 11px;
       border: var(--border);
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.5;
     }
 
     .log-bubble.narration {
-      background: #1a1a2e;
-      border-color: #333;
-      color: var(--white);
-      text-align: left;
+      background: #12121e;
+      border-color: #2a2a3a;
     }
 
     .log-bubble.player-text {
@@ -457,57 +519,132 @@
       background: var(--red);
       color: var(--white);
       font-weight: bold;
-      font-size: 11px;
-      letter-spacing: 1px;
+      font-size: 10px;
       text-align: center;
       width: 100%;
+      letter-spacing: 1px;
     }
 
     .log-bubble.system-text {
-      background: #222;
-      color: #888;
-      font-size: 11px;
-      font-style: italic;
+      background: #181818;
+      color: #666;
+      font-size: 10px;
       text-align: center;
       width: 100%;
+      font-style: italic;
     }
 
-    /* ========== SIDEBAR ========== */
+    /* ===== SIDEBAR ===== */
     .sidebar {
-      width: 200px;
+      width: 190px;
       display: flex;
       flex-direction: column;
-      background: #0a0a0a;
-      border-left: 1px solid #222;
+      background: #080810;
+      border-left: 1px solid #1a1a1a;
       flex-shrink: 0;
       overflow: hidden;
       z-index: 5;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 680px) {
       .sidebar {
         display: none;
       }
     }
 
-    .sidebar-section {
-      border-bottom: 1px solid #222;
-      padding: 10px;
+    .sidebar-block {
+      border-bottom: 1px solid #1a1a1a;
+      padding: 9px 10px;
     }
 
-    .sidebar-label {
-      font-size: 8px;
+    .sidebar-lbl {
+      font-size: 7px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      opacity: 0.4;
-      margin-bottom: 6px;
+      opacity: 0.35;
+      margin-bottom: 5px;
     }
 
-    .arc-entry {
-      font-size: 11px;
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 9px 10px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 2px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: #222;
+    }
+
+    /* NPCs */
+    .npc-entry {
+      border: 1px solid #222;
       padding: 5px 7px;
+      margin-bottom: 6px;
+      font-size: 10px;
+      line-height: 1.35;
+      position: relative;
+    }
+
+    .npc-entry.promoted {
+      border-color: #555;
+      opacity: 0.4;
+    }
+
+    .npc-name {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .npc-status {
+      font-size: 9px;
+      opacity: 0.6;
+    }
+
+    .npc-promote-btn {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      font-family: var(--font);
+      font-size: 9px;
+      background: none;
       border: 1px solid #333;
+      color: #888;
+      padding: 2px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .npc-promote-btn:hover {
+      border-color: var(--white);
+      color: var(--white);
+    }
+
+    /* Rels */
+    .rel-entry {
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid #1a1a1a;
+      padding: 3px 5px;
+      margin-bottom: 4px;
+      font-size: 9px;
+    }
+
+    .rel-name {
+      font-weight: bold;
+    }
+
+    /* Arcos */
+    .arc-entry {
+      border: 1px solid #222;
+      padding: 5px 7px;
       margin-bottom: 5px;
+      font-size: 10px;
       line-height: 1.3;
     }
 
@@ -516,7 +653,7 @@
     }
 
     .arc-entry.closed {
-      opacity: 0.35;
+      opacity: 0.3;
     }
 
     .arc-name {
@@ -526,41 +663,76 @@
     }
 
     .arc-days {
-      font-size: 9px;
+      font-size: 8px;
       opacity: 0.5;
     }
 
-    .sidebar-arcs {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
+    /* Promote modal */
+    .promote-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      background: rgba(0, 0, 0, 0.85);
+      align-items: center;
+      justify-content: center;
     }
 
-    .sidebar-arcs::-webkit-scrollbar {
-      width: 2px;
-    }
-
-    .sidebar-arcs::-webkit-scrollbar-thumb {
-      background: #333;
-    }
-
-    /* Relationships panel */
-    .rel-entry {
-      font-size: 10px;
+    .promote-modal.open {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-      padding: 3px 5px;
-      border: 1px solid #222;
     }
 
-    .rel-name {
+    .promote-box {
+      background: #111;
+      border: 2px solid #444;
+      padding: 20px;
+      max-width: 320px;
+      width: 90%;
+    }
+
+    .promote-box h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .promote-input {
+      width: 100%;
+      padding: 7px 9px;
+      font-family: var(--font);
+      font-size: 12px;
+      background: #1a1a1a;
+      color: var(--white);
+      border: 1px solid #444;
+      margin-bottom: 10px;
+      outline: none;
+    }
+
+    .promote-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .promote-btns button {
+      flex: 1;
+      font-family: var(--font);
+      font-size: 11px;
       font-weight: bold;
+      padding: 7px;
+      cursor: pointer;
+      border: 1px solid #444;
+      text-transform: uppercase;
     }
 
-    .rel-status {
-      opacity: 0.6;
-      font-size: 9px;
+    .promote-btns .confirm-btn {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .promote-btns .cancel-btn {
+      background: none;
+      color: var(--white);
     }
   </style>
 </head>
@@ -569,12 +741,14 @@
 
   <!-- Top bar -->
   <div class="topbar">
-    <button class="back-btn" onclick="goBack()">Sair</button>
+    <button class="back-btn" onclick="goBack()">← Sair</button>
     <div class="topbar-title" id="slot-title">Carregando...</div>
-    <div class="topbar-time" id="time-display">Dia 1 — Manhã</div>
+    <div class="topbar-right">
+      <div class="topbar-time" id="time-display">Dia 1 — Manhã</div>
+    </div>
   </div>
 
-  <!-- Stats bar -->
+  <!-- Stats -->
   <div class="statsbar">
     <div class="stat">
       <div class="stat-label">Sanidade</div>
@@ -615,37 +789,34 @@
 
   <!-- Main -->
   <div class="main">
-
-    <!-- VN Scene -->
     <div class="vn-scene">
-
       <!-- Background -->
-      <div class="vn-bg" id="vn-bg">
+      <div class="vn-bg narrative-only" id="vn-bg">
         <img id="bg-img" src="" alt="" style="display:none" />
       </div>
-
+      <!-- Phase tag -->
+      <div class="phase-tag" id="phase-tag">Manhã</div>
       <!-- Characters -->
-      <div class="vn-chars" id="vn-chars"></div>
-
-      <!-- Log Overlay -->
-      <div class="vn-log-overlay" id="log-overlay">
+      <div class="vn-chars hidden" id="vn-chars"></div>
+      <!-- Log overlay -->
+      <div class="vn-log" id="vn-log">
         <button class="log-close" onclick="toggleLog()">✕ Fechar</button>
         <div id="log-content"></div>
       </div>
-
-      <!-- Dialog Box -->
+      <!-- Dialog box -->
       <div class="vn-dialogbox">
-        <button class="history-toggle" onclick="toggleLog()">Histórico</button>
-
-        <div class="vn-narration" id="vn-narration">
-          <div class="vn-speaker-name" id="vn-speaker">NARRADOR</div>
+        <div class="dialog-toprow">
+          <button class="history-btn" onclick="toggleLog()">Histórico</button>
+          <button class="advance-btn" id="advance-btn" onclick="advancePhase()">⏭ Avançar Fase</button>
+        </div>
+        <div class="vn-narration">
+          <div class="vn-speaker" id="vn-speaker">NARRADOR</div>
           <div class="vn-text" id="vn-text">Carregando...</div>
         </div>
-
         <div class="vn-input">
           <div class="input-hint">Use "fala entre aspas" e *ação entre asteriscos*</div>
           <div class="input-row">
-            <textarea id="inp-action" placeholder='"Ei, o que você quer?" *olha para os lados*'
+            <textarea id="inp-action" placeholder='"Ei, o que você quer?" *olha para os lados com cautela*'
               onkeydown="handleKey(event)"></textarea>
             <button class="send-btn" id="send-btn" onclick="sendAction()">▶</button>
           </div>
@@ -655,45 +826,69 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Memória</div>
-        <div id="memory-text" style="font-size:11px;opacity:0.5;font-style:italic;line-height:1.4">Sem resumo ainda.
+      <div class="sidebar-block">
+        <div class="sidebar-lbl">Memória</div>
+        <div id="memory-text" style="font-size:10px;opacity:0.45;font-style:italic;line-height:1.4">Sem resumo ainda.
         </div>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Relacionamentos</div>
-        <div id="rels-list" style="font-size:11px;opacity:0.4;font-style:italic">Nenhum ainda.</div>
+      <div class="sidebar-block">
+        <div class="sidebar-lbl">Relacionamentos</div>
+        <div id="rels-list" style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</div>
       </div>
-      <div class="sidebar-label" style="padding:10px 10px 4px">Arcos Narrativos</div>
-      <div class="sidebar-arcs" id="arcs-list">
-        <div style="font-size:11px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>
+      <div class="sidebar-block">
+        <div class="sidebar-lbl">NPCs Conhecidos</div>
+        <div id="npcs-list" style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</div>
+      </div>
+      <div class="sidebar-lbl" style="padding:8px 10px 3px">Arcos</div>
+      <div class="sidebar-scroll" id="arcs-list">
+        <div style="font-size:10px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>
       </div>
     </div>
+  </div>
 
+  <!-- Promote NPC Modal -->
+  <div class="promote-modal" id="promote-modal">
+    <div class="promote-box">
+      <h3>Promover NPC</h3>
+      <p style="font-size:11px;opacity:0.7;margin-bottom:12px"><span id="promote-npc-name"></span> será adicionado como
+        personagem permanente do Pack.</p>
+      <input class="promote-input" id="promote-img-url" placeholder="URL da imagem (opcional)" />
+      <div class="promote-btns">
+        <button class="confirm-btn" onclick="confirmPromote()">Confirmar</button>
+        <button class="cancel-btn" onclick="closePromoteModal()">Cancelar</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const API_BASE = "http://localhost:8000";
     let slotId = sessionStorage.getItem("slot_id");
     let authToken = sessionStorage.getItem("auth_token");
-    let logOpen = false;
-    let allEvents = [];
+    let logOpen = false, allEvents = [], promotingNpc = null;
+
+    const PHASES = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
 
     // ============================================================
     // Boot
     // ============================================================
     window.addEventListener("DOMContentLoaded", async () => {
       if (!slotId || !authToken) { window.location.href = "index.html"; return; }
+
+      // Check for opening narration from new save
+      const opening = sessionStorage.getItem("opening_narration");
+      if (opening) {
+        sessionStorage.removeItem("opening_narration");
+        setNarration("NARRADOR", opening);
+        addEventToLog({ type: "narration", content: opening });
+      }
+
       await loadSlot();
       await loadHistory();
       await loadArcs();
     });
 
     async function api(method, path, body = null) {
-      const opts = {
-        method,
-        headers: { "Authorization": `Bearer ${authToken}`, "Content-Type": "application/json" },
-      };
+      const opts = { method, headers: { "Authorization": `Bearer ${authToken}`, "Content-Type": "application/json" } };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(`${API_BASE}${path}`, opts);
       if (res.status === 401) {
@@ -709,19 +904,18 @@
     async function loadSlot() {
       try {
         const slot = await api("GET", `/slots/${slotId}`);
-        document.getElementById("slot-title").textContent = slot.title;
+        document.getElementById("slot-title").textContent = slot.title || "—";
         const ws = slot.world_state || {};
         updateStats(ws);
         updateTime(ws.current_day || 1, ws.current_phase || "morning");
         updateRelationships(ws.relationships || {});
+        updateNPCs(ws.emergent_npcs || {});
         if (slot.memory_summary) document.getElementById("memory-text").textContent = slot.memory_summary;
-        if (ws.current_background) trySetBackground(ws.current_background, ws);
-        if (ws.active_characters && ws.active_characters.length) {
-          // Characters without image URLs on first load
-          renderCharPlaceholders(ws.active_characters);
+        if (ws.scene_type === "character_focus" && (ws.active_characters || []).length) {
+          renderCharsByName(ws.active_characters, [], ws.emergent_npcs || {});
         }
       } catch (err) {
-        if (err.message !== "Sessao expirada") setNarration("SISTEMA", `Erro ao carregar slot: ${err.message}`);
+        if (err.message !== "Sessao expirada") setNarration("SISTEMA", `Erro ao carregar: ${err.message}`);
       }
     }
 
@@ -730,89 +924,88 @@
         const events = await api("GET", `/slots/${slotId}/history?limit=80`);
         allEvents = events;
         renderLogContent();
-
-        // Show last narration in the dialog box
         const narrations = events.filter(e => e.type === "narration");
-        if (narrations.length) {
-          const last = narrations[narrations.length - 1];
-          setNarration("NARRADOR", last.content);
-        } else {
+        if (narrations.length && !sessionStorage.getItem("showed_opening")) {
+          setNarration("NARRADOR", narrations[narrations.length - 1].content);
+        } else if (!narrations.length) {
           setNarration("NARRADOR", "A história começa aqui. O que você faz?");
         }
       } catch (_) { }
     }
 
     async function loadArcs() {
-      try {
-        const arcs = await api("GET", `/slots/${slotId}/arcs`);
-        renderArcs(arcs);
-      } catch (_) { }
+      try { const arcs = await api("GET", `/slots/${slotId}/arcs`); renderArcs(arcs); } catch (_) { }
     }
 
     // ============================================================
-    // Send Action
+    // Actions
     // ============================================================
     async function sendAction() {
-      const textarea = document.getElementById("inp-action");
-      const raw = textarea.value.trim();
+      const ta = document.getElementById("inp-action");
+      const raw = ta.value.trim();
       if (!raw) return;
-      setSending(true);
-      textarea.value = "";
-
-      // Immediately show player action in log
-      addEventToLog({ type: "player_action", content: raw, id: Date.now() + "p" });
-
-      // Show "thinking" state
-      setNarration("...", "");
-      document.getElementById("vn-text").classList.add("typing");
-
+      setSending(true); ta.value = "";
+      addEventToLog({ type: "player_action", content: raw });
+      setNarration("...", ""); document.getElementById("vn-text").classList.add("typing");
       try {
         const result = await api("POST", `/slots/${slotId}/action`, { input: raw });
-
-        document.getElementById("vn-text").classList.remove("typing");
-
-        // Update visual novel scene
-        setNarration("NARRADOR", result.narration);
-        updateStats(result.world_state);
-        updateTime(result.current_day, result.current_phase);
-        updateRelationships(result.world_state?.relationships || {});
-
-        // Update background if AI suggested one
-        if (result.current_background_url) {
-          setBgImage(result.current_background_url);
-        }
-
-        // Update characters
-        if (result.active_characters && result.active_characters.length) {
-          renderCharacters(result.active_characters);
-        }
-
-        if (result.world_state?.memory_summary) {
-          document.getElementById("memory-text").textContent = result.world_state.memory_summary;
-        }
-
-        addEventToLog({ type: "narration", content: result.narration, id: Date.now() + "n" });
+        applyResult(result);
+        addEventToLog({ type: "narration", content: result.narration });
         await loadArcs();
       } catch (err) {
         document.getElementById("vn-text").classList.remove("typing");
         if (err.message !== "Sessao expirada") {
           setNarration("SISTEMA", `Erro: ${err.message}`);
-          addEventToLog({ type: "system", content: `Erro: ${err.message}`, id: Date.now() });
+          addEventToLog({ type: "system", content: err.message });
         }
-      } finally {
-        setSending(false);
+      } finally { setSending(false); }
+    }
+
+    async function advancePhase() {
+      document.getElementById("advance-btn").disabled = true;
+      try {
+        const result = await api("POST", `/slots/${slotId}/advance`);
+        applyResult(result);
+        addEventToLog({ type: "system", content: result.narration });
+      } catch (err) {
+        if (err.message !== "Sessao expirada") setNarration("SISTEMA", err.message);
+      } finally { document.getElementById("advance-btn").disabled = false; }
+    }
+
+    function applyResult(result) {
+      document.getElementById("vn-text").classList.remove("typing");
+      setNarration("NARRADOR", result.narration);
+      updateStats(result.world_state || {});
+      updateTime(result.current_day, result.current_phase);
+      updateRelationships((result.world_state || {}).relationships || {});
+      updateNPCs((result.world_state || {}).emergent_npcs || {});
+      if ((result.world_state || {}).memory_summary) document.getElementById("memory-text").textContent = result.world_state.memory_summary;
+
+      // Background
+      if (result.current_background_url) setBgImage(result.current_background_url);
+
+      // Scene type & characters
+      const sceneType = result.scene_type || "narrative";
+      const bg = document.getElementById("vn-bg");
+      const chars = document.getElementById("vn-chars");
+
+      if (sceneType === "character_focus" && result.active_characters && result.active_characters.length) {
+        bg.classList.remove("narrative-only");
+        chars.classList.remove("hidden");
+        renderCharacters(result.active_characters, result.world_state?.emergent_npcs || {});
+      } else {
+        // Narrative scene
+        bg.classList.add("narrative-only");
+        chars.classList.add("hidden");
+        chars.innerHTML = "";
       }
     }
 
-    function handleKey(e) {
-      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAction(); }
-    }
+    function handleKey(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAction(); } }
 
     // ============================================================
-    // Visual Novel UI
+    // Scene
     // ============================================================
-
-    let typingTimeout = null;
     function setNarration(speaker, text) {
       document.getElementById("vn-speaker").textContent = speaker;
       document.getElementById("vn-text").textContent = text;
@@ -821,80 +1014,65 @@
     function setBgImage(url) {
       const img = document.getElementById("bg-img");
       if (url) { img.src = url; img.style.display = "block"; }
-      else { img.style.display = "none"; }
     }
 
-    function trySetBackground(bgName, ws) {
-      // No URL on load from slot - background will be set when AI responds
-    }
-
-    function renderCharacters(chars) {
+    function renderCharacters(chars, emergentNpcs) {
       const area = document.getElementById("vn-chars");
       area.innerHTML = "";
-      chars.forEach(c => {
+      chars.slice(0, 1).forEach(c => { // max 1 personagem
         const div = document.createElement("div");
         div.className = "vn-char";
         if (c.image_url) {
           const img = document.createElement("img");
-          img.src = c.image_url;
-          img.alt = c.name;
-          img.onerror = () => { div.innerHTML = `<div class="char-placeholder">${escHtml(c.name)}</div>`; };
+          img.src = c.image_url; img.alt = c.name;
+          img.onerror = () => buildPlaceholder(div, c.name, c.is_emergent);
           div.appendChild(img);
         } else {
-          div.innerHTML = `<div class="char-placeholder">${escHtml(c.name || "?")}</div>`;
+          buildPlaceholder(div, c.name, c.is_emergent);
         }
         area.appendChild(div);
       });
     }
 
-    function renderCharPlaceholders(names) {
+    function renderCharsByName(names, characters, emergentNpcs) {
       const area = document.getElementById("vn-chars");
       area.innerHTML = "";
-      names.forEach(name => {
-        const div = document.createElement("div");
-        div.className = "vn-char";
-        div.innerHTML = `<div class="char-placeholder">${escHtml(name)}</div>`;
-        area.appendChild(div);
-      });
-    }
-
-    // ============================================================
-    // Log overlay
-    // ============================================================
-
-    function toggleLog() {
-      logOpen = !logOpen;
-      document.getElementById("log-overlay").classList.toggle("open", logOpen);
-      if (logOpen) renderLogContent();
-    }
-
-    function addEventToLog(ev) {
-      allEvents.push(ev);
-      if (logOpen) renderLogContent();
-    }
-
-    function renderLogContent() {
-      const container = document.getElementById("log-content");
-      container.innerHTML = "";
-      for (const ev of allEvents) {
-        const entry = document.createElement("div");
-        entry.className = "log-entry" + (ev.type === "player_action" ? " player" : "");
-        const bubble = document.createElement("div");
-        if (ev.type === "player_action") bubble.className = "log-bubble player-text";
-        else if (ev.type === "arc_event") bubble.className = "log-bubble arc-event";
-        else if (ev.type === "system") bubble.className = "log-bubble system-text";
-        else bubble.className = "log-bubble narration";
-        bubble.textContent = ev.content;
-        entry.appendChild(bubble);
-        container.appendChild(entry);
+      if (!names || !names.length) return;
+      const charMap = {};
+      (characters || []).forEach(c => charMap[c.name] = c);
+      const name = names[0];
+      const div = document.createElement("div");
+      div.className = "vn-char";
+      const c = charMap[name];
+      if (c && c.image_url) {
+        const img = document.createElement("img"); img.src = c.image_url; img.alt = name;
+        img.onerror = () => buildPlaceholder(div, name, false);
+        div.appendChild(img);
+      } else {
+        const isEmergent = !c;
+        buildPlaceholder(div, name, isEmergent);
       }
-      container.scrollTop = container.scrollHeight;
+      area.appendChild(div);
+      document.getElementById("vn-chars").classList.remove("hidden");
+    }
+
+    function buildPlaceholder(div, name, isEmergent) {
+      if (isEmergent) {
+        div.className = "vn-char-emergent";
+        div.innerHTML = `<div class="emergent-silhouette"></div>`;
+        const label = document.createElement("div");
+        label.style.cssText = "position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9px;opacity:0.5";
+        label.textContent = name;
+        div.style.position = "relative";
+        div.appendChild(label);
+      } else {
+        div.innerHTML = `<div class="vn-char-placeholder"><div class="char-icon">👤</div><div>${escHtml(name)}</div></div>`;
+      }
     }
 
     // ============================================================
     // Stats
     // ============================================================
-
     function updateStats(ws) {
       if (!ws) return;
       setBar("sanity", ws.sanity, 100);
@@ -904,7 +1082,6 @@
       document.getElementById("val-social").textContent = ws.social_status || 0;
       setBar("meta", ws.meta_awareness, 100);
     }
-
     function setBar(key, value, max) {
       const pct = Math.max(0, Math.min(100, ((value || 0) / max) * 100));
       const fill = document.getElementById(`bar-${key}`);
@@ -912,36 +1089,39 @@
       if (fill) fill.style.width = pct + "%";
       if (val && key !== "social") val.textContent = value || 0;
     }
-
-    const phaseNames = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
     function updateTime(day, phase) {
-      document.getElementById("time-display").textContent = `Dia ${day} — ${phaseNames[phase] || phase}`;
+      document.getElementById("time-display").textContent = `Dia ${day} — ${PHASES[phase] || phase}`;
+      document.getElementById("phase-tag").textContent = PHASES[phase] || phase;
     }
-
     function updateRelationships(rels) {
       const el = document.getElementById("rels-list");
       const entries = Object.entries(rels || {});
-      if (!entries.length) {
-        el.innerHTML = '<span style="font-size:11px;opacity:0.4;font-style:italic">Nenhum ainda.</span>';
-        return;
-      }
+      if (!entries.length) { el.innerHTML = '<span style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</span>'; return; }
       el.innerHTML = entries.map(([name, data]) => {
         const info = typeof data === "object" ? data : {};
         const aff = info.affinity || 0;
-        const color = aff > 20 ? "#5af" : aff < -20 ? "#f55" : "#aaa";
-        return `<div class="rel-entry">
-          <span class="rel-name">${escHtml(name)}</span>
-          <span class="rel-status" style="color:${color}">${info.status || "?"} (${aff > 0 ? "+" : ""}${aff})</span>
+        const color = aff > 20 ? "#4af" : aff < -20 ? "#f66" : "#888";
+        return `<div class="rel-entry"><span class="rel-name">${escHtml(name)}</span><span style="color:${color};font-size:9px">${info.status || "?"} ${aff > 0 ? "+" : ""}${aff}</span></div>`;
+      }).join("");
+    }
+    function updateNPCs(npcs) {
+      const el = document.getElementById("npcs-list");
+      const entries = Object.entries(npcs || {});
+      if (!entries.length) { el.innerHTML = '<span style="font-size:10px;opacity:0.4;font-style:italic">Nenhum ainda.</span>'; return; }
+      el.innerHTML = entries.map(([name, data]) => {
+        const d = typeof data === "object" ? data : {};
+        const count = d.mention_count || 1;
+        const promoted = d.promoted || false;
+        return `<div class="npc-entry${promoted ? " promoted" : ""}">
+          <span class="npc-name">${escHtml(name)} ${count >= 3 && !promoted ? '⭐' : ''}</span>
+          <span class="npc-status">${escHtml(d.status || "neutro")} · ${count}x mencionado</span>
+          ${!promoted ? `<button class="npc-promote-btn" onclick="openPromoteModal('${escHtml(name)}')">→ Tornar Permanente</button>` : '<span style="font-size:9px;opacity:0.4">Promovido ✓</span>'}
         </div>`;
       }).join("");
     }
-
     function renderArcs(arcs) {
       const el = document.getElementById("arcs-list");
-      if (!arcs.length) {
-        el.innerHTML = '<div style="font-size:11px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>';
-        return;
-      }
+      if (!arcs.length) { el.innerHTML = '<div style="font-size:10px;opacity:0.4;font-style:italic">Nenhum arco ainda.</div>'; return; }
       el.innerHTML = arcs.map(a => `
         <div class="arc-entry ${a.status}">
           <span class="arc-name">${escHtml(a.title)}</span>
@@ -950,20 +1130,55 @@
     }
 
     // ============================================================
+    // Log
+    // ============================================================
+    function toggleLog() { logOpen = !logOpen; document.getElementById("vn-log").classList.toggle("open", logOpen); if (logOpen) renderLogContent(); }
+    function addEventToLog(ev) { allEvents.push(ev); if (logOpen) renderLogContent(); }
+    function renderLogContent() {
+      const c = document.getElementById("log-content"); c.innerHTML = "";
+      for (const ev of allEvents) {
+        const entry = document.createElement("div");
+        entry.className = "log-entry" + (ev.type === "player_action" ? " player" : "");
+        const bubble = document.createElement("div");
+        if (ev.type === "player_action") bubble.className = "log-bubble player-text";
+        else if (ev.type === "arc_event") bubble.className = "log-bubble arc-event";
+        else if (ev.type === "system") bubble.className = "log-bubble system-text";
+        else bubble.className = "log-bubble narration";
+        bubble.textContent = ev.content;
+        entry.appendChild(bubble); c.appendChild(entry);
+      }
+      c.scrollTop = c.scrollHeight;
+    }
+
+    // ============================================================
+    // Promote NPC Modal
+    // ============================================================
+    function openPromoteModal(npcName) {
+      promotingNpc = npcName;
+      document.getElementById("promote-npc-name").textContent = npcName;
+      document.getElementById("promote-img-url").value = "";
+      document.getElementById("promote-modal").classList.add("open");
+    }
+    function closePromoteModal() { promotingNpc = null; document.getElementById("promote-modal").classList.remove("open"); }
+    async function confirmPromote() {
+      if (!promotingNpc) return;
+      const imgUrl = document.getElementById("promote-img-url").value.trim() || null;
+      try {
+        await api("POST", `/slots/${slotId}/promote-npc`, { npc_name: promotingNpc, image_url: imgUrl });
+        closePromoteModal();
+        await loadSlot();
+      } catch (err) { alert("Erro: " + err.message); }
+    }
+
+    // ============================================================
     // Helpers
     // ============================================================
-
     function setSending(loading) {
-      const btn = document.getElementById("send-btn");
-      const ta = document.getElementById("inp-action");
-      btn.disabled = loading; ta.disabled = loading;
-      btn.textContent = loading ? "..." : "▶";
+      const btn = document.getElementById("send-btn"); const ta = document.getElementById("inp-action");
+      btn.disabled = loading; ta.disabled = loading; btn.textContent = loading ? "..." : "▶";
     }
     function goBack() { window.location.href = "index.html"; }
-    function escHtml(str) {
-      if (!str) return "";
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+    function escHtml(s) { if (!s) return ""; return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   </script>
 </body>
 

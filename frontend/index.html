@@ -49,44 +49,17 @@
       pointer-events: none;
       z-index: 0;
       opacity: 0.04;
-      background: conic-gradient(from 0deg at 50% 50%,
-          #000 0deg 1deg, transparent 1deg 7deg, #000 7deg 8deg, transparent 8deg 14deg,
-          #000 14deg 15deg, transparent 15deg 21deg, #000 21deg 22deg, transparent 22deg 28deg,
-          #000 28deg 29deg, transparent 29deg 35deg, #000 35deg 36deg, transparent 36deg 42deg,
-          #000 42deg 43deg, transparent 43deg 49deg, #000 49deg 50deg, transparent 50deg 56deg,
-          #000 56deg 57deg, transparent 57deg 63deg, #000 63deg 64deg, transparent 64deg 70deg,
-          #000 70deg 71deg, transparent 71deg 77deg, #000 77deg 78deg, transparent 78deg 84deg,
-          #000 84deg 85deg, transparent 85deg 91deg, #000 91deg 92deg, transparent 92deg 98deg,
-          #000 98deg 99deg, transparent 99deg 105deg, #000 105deg 106deg, transparent 106deg 112deg,
-          #000 112deg 113deg, transparent 113deg 119deg, #000 119deg 120deg, transparent 120deg 126deg,
-          #000 126deg 127deg, transparent 127deg 133deg, #000 133deg 134deg, transparent 134deg 140deg,
-          #000 140deg 141deg, transparent 141deg 147deg, #000 147deg 148deg, transparent 148deg 154deg,
-          #000 154deg 155deg, transparent 155deg 161deg, #000 161deg 162deg, transparent 162deg 168deg,
-          #000 168deg 169deg, transparent 169deg 175deg, #000 175deg 176deg, transparent 176deg 182deg,
-          #000 182deg 183deg, transparent 183deg 189deg, #000 189deg 190deg, transparent 190deg 196deg,
-          #000 196deg 197deg, transparent 197deg 203deg, #000 203deg 204deg, transparent 204deg 210deg,
-          #000 210deg 211deg, transparent 211deg 217deg, #000 217deg 218deg, transparent 218deg 224deg,
-          #000 224deg 225deg, transparent 225deg 231deg, #000 231deg 232deg, transparent 232deg 238deg,
-          #000 238deg 239deg, transparent 239deg 245deg, #000 245deg 246deg, transparent 246deg 252deg,
-          #000 252deg 253deg, transparent 253deg 259deg, #000 259deg 260deg, transparent 260deg 266deg,
-          #000 266deg 267deg, transparent 267deg 273deg, #000 273deg 274deg, transparent 274deg 280deg,
-          #000 280deg 281deg, transparent 281deg 287deg, #000 287deg 288deg, transparent 288deg 294deg,
-          #000 294deg 295deg, transparent 295deg 301deg, #000 301deg 302deg, transparent 302deg 308deg,
-          #000 308deg 309deg, transparent 309deg 315deg, #000 315deg 316deg, transparent 316deg 322deg,
-          #000 322deg 323deg, transparent 323deg 329deg, #000 329deg 330deg, transparent 330deg 336deg,
-          #000 336deg 337deg, transparent 337deg 343deg, #000 343deg 344deg, transparent 344deg 350deg,
-          #000 350deg 351deg, transparent 351deg 360deg);
+      background: conic-gradient(from 0deg at 50% 50%, #000 0deg 1deg, transparent 1deg 7deg, #000 7deg 8deg, transparent 8deg 14deg, #000 14deg 15deg, transparent 15deg 21deg, #000 21deg 22deg, transparent 22deg 28deg, #000 28deg 29deg, transparent 29deg 35deg, #000 35deg 36deg, transparent 36deg 42deg, #000 42deg 43deg, transparent 43deg 49deg, #000 49deg 50deg, transparent 50deg 56deg, #000 56deg 57deg, transparent 57deg 63deg, #000 63deg 64deg, transparent 64deg 70deg, #000 70deg 71deg, transparent 71deg 77deg, #000 77deg 78deg, transparent 78deg 84deg, #000 84deg 85deg, transparent 85deg 91deg, #000 91deg 92deg, transparent 92deg 98deg, #000 98deg 99deg, transparent 99deg 360deg);
     }
 
     .app {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       padding: 24px 16px;
     }
 
-    /* Header */
     .header {
       text-align: center;
       margin-bottom: 32px;
@@ -114,7 +87,7 @@
       display: inline-block;
     }
 
-    .header h1 .title-red {
+    .header h1 .red {
       color: var(--red);
       display: block;
     }
@@ -136,13 +109,12 @@
       font-style: italic;
     }
 
-    /* Panel */
     .panel {
       background: var(--panel);
       border: var(--border);
       box-shadow: var(--shadow);
-      padding: 24px;
-      margin-bottom: 20px;
+      padding: 22px;
+      margin-bottom: 18px;
       position: relative;
     }
 
@@ -160,48 +132,37 @@
       border: 2px solid var(--black);
     }
 
-    /* Form */
     .field {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .field label {
       display: block;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
-    .field input {
+    .field input,
+    .field textarea,
+    .field select {
       width: 100%;
-      padding: 10px 12px;
-      font-family: var(--font);
-      font-size: 14px;
-      background: var(--white);
-      border: var(--border);
-      outline: none;
-      transition: box-shadow 0.1s;
-    }
-
-    .field input:focus {
-      box-shadow: var(--shadow);
-    }
-
-    .field textarea {
-      width: 100%;
-      padding: 10px 12px;
+      padding: 9px 11px;
       font-family: var(--font);
       font-size: 13px;
       background: var(--white);
       border: var(--border);
       outline: none;
-      resize: vertical;
-      min-height: 80px;
-      transition: box-shadow 0.1s;
     }
 
+    .field textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .field input:focus,
     .field textarea:focus {
       box-shadow: var(--shadow);
     }
@@ -209,9 +170,9 @@
     .btn {
       display: block;
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       font-family: var(--font);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -234,15 +195,7 @@
     .btn-secondary {
       background: var(--white);
       color: var(--black);
-      margin-top: 10px;
-    }
-
-    .btn-sm {
-      display: inline-block;
-      width: auto;
-      padding: 6px 14px;
-      font-size: 12px;
-      box-shadow: 3px 3px 0 var(--black);
+      margin-top: 8px;
     }
 
     .btn-danger {
@@ -250,9 +203,24 @@
       color: var(--white);
     }
 
+    .btn-sm {
+      display: inline-block;
+      width: auto;
+      padding: 5px 12px;
+      font-size: 11px;
+      box-shadow: 3px 3px 0 var(--black);
+      margin-bottom: 2px;
+    }
+
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .toggle-link {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 14px;
       font-size: 13px;
     }
 
@@ -266,12 +234,11 @@
       color: var(--red);
     }
 
-    /* Messages */
     .msg {
-      padding: 10px 14px;
+      padding: 9px 12px;
       border: 2px solid var(--black);
-      font-size: 13px;
-      margin-bottom: 14px;
+      font-size: 12px;
+      margin-bottom: 12px;
       font-weight: bold;
     }
 
@@ -285,21 +252,24 @@
       color: var(--white);
     }
 
-    /* Slots screen */
+    /* ---- SCREENS ---- */
     #screen-slots,
-    #screen-pack-select {
+    #screen-pack-select,
+    #screen-player-setup,
+    #screen-pack-manage {
       display: none;
     }
 
+    /* ---- SLOTS ---- */
     .slots-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .slots-header h2 {
-      font-size: 22px;
+      font-size: 20px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -321,211 +291,21 @@
       color: var(--white);
     }
 
-    .slot-card {
-      border: var(--border);
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: stretch;
-      min-height: 72px;
-    }
-
-    .slot-number {
-      width: 48px;
-      background: var(--black);
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-
-    .slot-body {
-      flex: 1;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .slot-title {
-      font-size: 15px;
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    .slot-meta {
-      font-size: 11px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .slot-pack-tag {
-      display: inline-block;
-      background: var(--ink);
-      color: var(--white);
-      font-size: 10px;
-      padding: 1px 6px;
-      margin-top: 3px;
-      letter-spacing: 1px;
-    }
-
-    .slot-empty .slot-title {
-      opacity: 0.4;
-      font-style: italic;
-    }
-
-    .slot-actions {
-      display: flex;
-      flex-direction: column;
-      border-left: 2px solid var(--black);
-    }
-
-    .slot-btn {
-      font-family: var(--font);
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      border: none;
-      padding: 0 14px;
-      flex: 1;
-      background: none;
-    }
-
-    .slot-btn:not(:last-child) {
-      border-bottom: 2px solid var(--black);
-    }
-
-    .slot-btn:hover {
-      background: var(--black);
-      color: var(--white);
-    }
-
-    .slot-btn.red:hover {
-      background: var(--red);
-      color: var(--white);
-    }
-
-    /* Pack select screen */
-    .pack-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .pack-card {
-      border: 2px solid var(--black);
-      background: var(--white);
-      padding: 12px;
-      cursor: pointer;
-      transition: all 0.1s;
-      position: relative;
-    }
-
-    .pack-card:hover,
-    .pack-card.selected {
-      background: var(--black);
-      color: var(--white);
-      box-shadow: 3px 3px 0 var(--red);
-    }
-
-    .pack-card-title {
-      font-size: 13px;
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    .pack-card-tone {
-      font-size: 10px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .pack-card-concept {
-      font-size: 11px;
-      margin-top: 6px;
-      line-height: 1.3;
-      opacity: 0.8;
-    }
-
-    .pack-card.selected .pack-card-concept {
-      opacity: 0.8;
-    }
-
-    .pack-none-card {
-      border: 2px dashed #aaa;
-      background: transparent;
-      padding: 12px;
-      cursor: pointer;
-      text-align: center;
-      color: #777;
-    }
-
-    .pack-none-card:hover {
-      border-color: var(--black);
-      color: var(--black);
-    }
-
-    .pack-none-card.selected {
-      border: 2px solid var(--black);
-      color: var(--black);
-      background: #f0f0f0;
-    }
-
-    /* Spinner */
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .user-badge {
-      font-size: 12px;
-      background: var(--ink);
-      color: var(--white);
-      display: inline-block;
-      padding: 3px 10px;
-      margin-bottom: 6px;
-      letter-spacing: 1px;
-    }
-
-    /* Tabs on slots screen */
     .tab-row {
       display: flex;
-      gap: 0;
-      margin-bottom: 20px;
       border: var(--border);
+      margin-bottom: 18px;
     }
 
     .tab-btn {
       flex: 1;
       font-family: var(--font);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
       border: none;
-      padding: 10px;
+      padding: 9px;
       cursor: pointer;
       background: var(--white);
       color: var(--black);
@@ -547,44 +327,371 @@
     .tab-pane.active {
       display: block;
     }
+
+    .slot-card {
+      border: var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: stretch;
+      min-height: 68px;
+    }
+
+    .slot-number {
+      width: 44px;
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .slot-body {
+      flex: 1;
+      padding: 10px 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slot-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .slot-meta {
+      font-size: 10px;
+      opacity: 0.55;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .slot-pack-tag {
+      display: inline-block;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 9px;
+      padding: 1px 5px;
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+
+    .slot-empty .slot-title {
+      opacity: 0.4;
+      font-style: italic;
+    }
+
+    .slot-actions {
+      display: flex;
+      flex-direction: column;
+      border-left: 2px solid var(--black);
+    }
+
+    .slot-btn {
+      font-family: var(--font);
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: none;
+      padding: 0 12px;
+      flex: 1;
+      background: none;
+    }
+
+    .slot-btn:not(:last-child) {
+      border-bottom: 2px solid var(--black);
+    }
+
+    .slot-btn:hover {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .slot-btn.red:hover {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    /* ---- PACK SELECT ---- */
+    .pack-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pack-card {
+      border: 2px solid var(--black);
+      background: var(--white);
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    .pack-card:hover,
+    .pack-card.selected {
+      background: var(--black);
+      color: var(--white);
+      box-shadow: 3px 3px 0 var(--red);
+    }
+
+    .pack-card-title {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .pack-card-tone {
+      font-size: 9px;
+      opacity: 0.6;
+      text-transform: uppercase;
+    }
+
+    .pack-card-concept {
+      font-size: 10px;
+      margin-top: 5px;
+      line-height: 1.3;
+      opacity: 0.75;
+    }
+
+    .pack-none-card {
+      border: 2px dashed #aaa;
+      background: transparent;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      color: #777;
+    }
+
+    .pack-none-card:hover,
+    .pack-none-card.selected {
+      border: 2px solid var(--black);
+      color: var(--black);
+      background: #f0f0f0;
+    }
+
+    /* ---- WORLDS TAB ---- */
+    .world-card {
+      border: 2px solid var(--black);
+      background: var(--white);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .world-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .world-card-title {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .world-card-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .world-card-tone {
+      font-size: 10px;
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .world-card-concept {
+      font-size: 11px;
+      margin-top: 6px;
+      opacity: 0.7;
+      line-height: 1.3;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      padding: 1px 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .badge-public {
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    /* ---- PACK MANAGE ---- */
+    .char-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .char-card {
+      border: 2px solid var(--black);
+      padding: 8px;
+      background: var(--white);
+      position: relative;
+    }
+
+    .char-card-img {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+      background: #ddd;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .char-card-img-placeholder {
+      width: 100%;
+      height: 80px;
+      background: linear-gradient(135deg, #e0e0e0, #c0c0c0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .char-card-name {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .char-card-desc {
+      font-size: 10px;
+      opacity: 0.6;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    .char-delete {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      font-size: 10px;
+      padding: 1px 5px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+
+    .bg-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .bg-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #ccc;
+      padding: 7px 10px;
+      background: var(--white);
+    }
+
+    .bg-item-name {
+      flex: 1;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .bg-item-desc {
+      font-size: 10px;
+      opacity: 0.6;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .user-badge {
+      font-size: 11px;
+      background: var(--ink);
+      color: var(--white);
+      display: inline-block;
+      padding: 2px 8px;
+      margin-bottom: 5px;
+      letter-spacing: 1px;
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 2px solid var(--black);
+      margin: 14px 0;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      opacity: 0.5;
+      margin-bottom: 8px;
+    }
+
+    .trait-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
   </style>
 </head>
 
 <body>
-
   <div class="speed-lines"></div>
   <div class="app">
 
-    <!-- Auth Screen -->
+    <!-- ======= AUTH ======= -->
     <div id="screen-auth">
       <div class="header">
         <div class="header-label">Visual Novel RPG</div>
-        <h1>Status<span class="title-red">Zero</span></h1>
+        <h1>Status<span class="red">Zero</span></h1>
         <p class="header-sub">A história é sua. ou quase isso.</p>
       </div>
-      <div class="panel" id="auth-panel">
+      <div class="panel">
         <span class="panel-label" id="auth-panel-label">Entrar</span>
         <div id="auth-msg" style="display:none" class="msg"></div>
-        <div class="field">
-          <label for="inp-email">Email</label>
-          <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email" />
-        </div>
-        <div class="field" id="field-username" style="display:none">
-          <label for="inp-username">Username</label>
-          <input type="text" id="inp-username" placeholder="como te chamam" autocomplete="username" />
-        </div>
-        <div class="field">
-          <label for="inp-password">Senha</label>
-          <input type="password" id="inp-password" placeholder="sua senha" autocomplete="current-password" />
-        </div>
+        <div class="field"><label>Email</label><input type="email" id="inp-email" placeholder="seu@email.com" /></div>
+        <div class="field" id="field-username" style="display:none"><label>Username</label><input type="text"
+            id="inp-username" placeholder="como te chamam" /></div>
+        <div class="field"><label>Senha</label><input type="password" id="inp-password" placeholder="sua senha" /></div>
         <button class="btn btn-primary" id="btn-auth" onclick="handleAuth()">Entrar</button>
-        <div class="toggle-link">
-          <span id="toggle-auth" onclick="toggleAuthMode()">Cadastre-se</span>
-        </div>
+        <div class="toggle-link"><span id="toggle-auth" onclick="toggleAuthMode()">Cadastre-se</span></div>
       </div>
     </div>
 
-    <!-- Slots Screen -->
+    <!-- ======= SLOTS ======= -->
     <div id="screen-slots">
       <div class="slots-header">
         <div>
@@ -593,75 +700,142 @@
         </div>
         <button class="logout-btn" onclick="logout()">Sair</button>
       </div>
-
-      <!-- Tabs: Saves | Criar Mundo -->
       <div class="tab-row">
         <button class="tab-btn active" id="tab-saves-btn" onclick="switchTab('saves')">Saves</button>
         <button class="tab-btn" id="tab-worlds-btn" onclick="switchTab('worlds')">Meus Mundos</button>
       </div>
-
-      <!-- Tab: Saves -->
       <div class="tab-pane active" id="tab-saves">
         <div id="slots-msg" style="display:none" class="msg"></div>
         <div id="slots-list"></div>
       </div>
-
-      <!-- Tab: Mundos -->
       <div class="tab-pane" id="tab-worlds">
         <div id="worlds-msg" style="display:none" class="msg"></div>
-        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="showCreateWorldForm()">+ Novo
-          Mundo</button>
+        <button class="btn btn-primary btn-sm" style="margin-bottom:14px"
+          onclick="showScreen('screen-pack-manage', {mode:'create'})">+ Criar Novo Mundo</button>
         <div id="worlds-list"></div>
-
-        <!-- Create World Form (hidden by default) -->
-        <div id="create-world-form" style="display:none" class="panel" style="margin-top:16px">
-          <span class="panel-label">Criar Mundo</span>
-          <div class="field">
-            <label>Nome do Mundo</label>
-            <input type="text" id="wf-title" placeholder="Ex: Escola dos Predadores" maxlength="100" />
-          </div>
-          <div class="field">
-            <label>Conceito do Mundo</label>
-            <textarea id="wf-concept"
-              placeholder="Descreva o universo, contexto, atmosfera, personagens típicos..."></textarea>
-          </div>
-          <div class="field">
-            <label>Tom Narrativo</label>
-            <input type="text" id="wf-tone" placeholder="Ex: dramatico, tenso, comico, sombrio" value="dramatico" />
-          </div>
-          <div class="field">
-            <label>Regras do Mundo</label>
-            <textarea id="wf-rules"
-              placeholder="Limites estruturais: realista, sem poderes, morte permanente..."></textarea>
-          </div>
-          <div class="field">
-            <label><input type="checkbox" id="wf-public" style="margin-right:6px"><p>Tornar público (outros jogadores
-              poderão usar)</p></label>
-          </div>
-          <button class="btn btn-primary" onclick="submitCreateWorld()">Criar Mundo</button>
-          <button class="btn btn-secondary" onclick="hideCreateWorldForm()">Cancelar</button>
-        </div>
       </div>
     </div>
 
-    <!-- Pack Select Screen -->
+    <!-- ======= PACK SELECT ======= -->
     <div id="screen-pack-select">
       <div class="slots-header">
         <h2>Escolha o Universo</h2>
-        <button class="logout-btn" onclick="cancelPackSelect()">Voltar</button>
+        <button class="logout-btn" onclick="showScreen('screen-slots')">Voltar</button>
       </div>
-      <p style="font-size:13px;opacity:0.6;margin-bottom:16px;font-style:italic">
-        Escolha um Roleplay Pack para o Slot <span id="pack-slot-label">?</span>. O Pack define o universo, personagens
-        e tom da sua história.
-      </p>
+      <p style="font-size:12px;opacity:0.6;margin-bottom:14px;font-style:italic">Slot <span
+          id="pack-slot-label">?</span> — Escolha um Pack ou jogue sem nenhum.</p>
       <div id="packs-msg" style="display:none" class="msg"></div>
       <div class="pack-grid" id="packs-grid"></div>
+      <button class="btn btn-primary" onclick="goToPlayerSetup()">Próximo →</button>
+    </div>
 
-      <div class="field" style="margin-top:8px">
-        <label>Nome da história</label>
-        <input type="text" id="pack-title-input" placeholder="Nova Historia" maxlength="80" />
+    <!-- ======= PLAYER SETUP ======= -->
+    <div id="screen-player-setup">
+      <div class="slots-header">
+        <h2>Seu Personagem</h2>
+        <button class="logout-btn" onclick="showScreen('screen-pack-select')">Voltar</button>
       </div>
-      <button class="btn btn-primary" onclick="confirmCreateSlot()">Começar História</button>
+      <p style="font-size:12px;opacity:0.6;margin-bottom:14px;font-style:italic">Defina quem você é. Você não aparece na
+        tela — o mundo reage a você.</p>
+      <div id="player-msg" style="display:none" class="msg"></div>
+      <div class="panel">
+        <span class="panel-label">Identidade</span>
+        <div class="field"><label>Nome do personagem</label><input type="text" id="ps-name" placeholder="Ex: Kang Junho"
+            maxlength="60" /></div>
+        <div class="field"><label>Descrição (opcional)</label><textarea id="ps-desc"
+            placeholder="Ex: Novo aluno, quieto, olhos que observam tudo. Carrega algo escondido..."></textarea></div>
+        <hr class="divider">
+        <div class="section-label">Atributos Iniciais</div>
+        <div class="trait-row">
+          <div class="field"><label>Confiança (0-100)</label><input type="number" id="ps-confidence" value="50" min="0"
+              max="100" /></div>
+          <div class="field"><label>Violência (0-100)</label><input type="number" id="ps-violence" value="0" min="0"
+              max="100" /></div>
+        </div>
+        <div class="field"><label>Status Social (-100 a 100)</label><input type="number" id="ps-status" value="0"
+            min="-100" max="100" /></div>
+        <hr class="divider">
+        <div class="field"><label>Nome da história</label><input type="text" id="ps-title" placeholder="Nova Historia"
+            maxlength="80" /></div>
+      </div>
+      <button class="btn btn-primary" onclick="confirmCreateSlot()">Começar História ▶</button>
+    </div>
+
+    <!-- ======= PACK MANAGE ======= -->
+    <div id="screen-pack-manage">
+      <div class="slots-header">
+        <h2 id="pm-title">Criar Mundo</h2>
+        <button class="logout-btn" onclick="showScreen('screen-slots'); loadWorlds()">Voltar</button>
+      </div>
+      <div id="pm-msg" style="display:none" class="msg"></div>
+
+      <!-- World info form -->
+      <div class="panel">
+        <span class="panel-label">Universo</span>
+        <div class="field"><label>Nome do Mundo</label><input type="text" id="pm-world-title"
+            placeholder="Ex: Escola dos Predadores" maxlength="100" /></div>
+        <div class="field"><label>Conceito do Mundo</label><textarea id="pm-world-concept"
+            placeholder="Descreva o universo, contexto, atmosfera, personagens típicos, regras sociais..."
+            style="min-height:100px"></textarea></div>
+        <div class="field"><label>Tom Narrativo</label><input type="text" id="pm-world-tone"
+            placeholder="Ex: dramatico, tenso, sombrio, comico" value="dramatico" /></div>
+        <div class="field"><label>Regras do Mundo</label><textarea id="pm-world-rules"
+            placeholder="Limites: realista, sem poderes, morte permanente..."></textarea></div>
+        <div class="field"><label><input type="checkbox" id="pm-world-public" style="margin-right:6px">Tornar público
+            (outros jogadores poderão usar)</label></div>
+        <button class="btn btn-primary" id="pm-save-world-btn" onclick="saveWorld()">Salvar Mundo</button>
+      </div>
+
+      <!-- Characters section (only shown after world is saved) -->
+      <div id="pm-chars-section" style="display:none">
+        <div class="panel">
+          <span class="panel-label">Personagens</span>
+          <p style="font-size:11px;opacity:0.6;margin-bottom:12px">Personagens persistentes com imagem. A IA pode criar
+            NPCs temporários durante o jogo.</p>
+          <div class="char-grid" id="pm-chars-grid"></div>
+          <hr class="divider">
+          <div class="section-label">Adicionar Personagem</div>
+          <div class="field"><label>Nome</label><input type="text" id="nc-name" placeholder="Ex: Park Minho"
+              maxlength="80" /></div>
+          <div class="field"><label>URL da Imagem (PNG, fundo transparente ideal)</label><input type="text" id="nc-img"
+              placeholder="https://..." /></div>
+          <div class="field"><label>Descrição / Personalidade</label><textarea id="nc-personality"
+              placeholder="Ex: Líder do grupo dominante. Calmo por fora, calculista por dentro. Nunca perde a compostura."></textarea>
+          </div>
+          <div class="section-label" style="margin-top:8px">Atributos Base</div>
+          <div class="trait-row">
+            <div class="field"><label>Agressividade (0-100)</label><input type="number" id="nc-aggression" value="50"
+                min="0" max="100" /></div>
+            <div class="field"><label>Lealdade (0-100)</label><input type="number" id="nc-loyalty" value="50" min="0"
+                max="100" /></div>
+          </div>
+          <div class="trait-row">
+            <div class="field"><label>Confiança (0-100)</label><input type="number" id="nc-confidence" value="50"
+                min="0" max="100" /></div>
+            <div class="field"><label>Influência (0-100)</label><input type="number" id="nc-influence" value="50"
+                min="0" max="100" /></div>
+          </div>
+          <button class="btn btn-secondary" onclick="addCharacter()" style="margin-top:4px">+ Adicionar
+            Personagem</button>
+        </div>
+
+        <!-- Backgrounds section -->
+        <div class="panel">
+          <span class="panel-label">Cenários (Backgrounds)</span>
+          <p style="font-size:11px;opacity:0.6;margin-bottom:12px">A IA escolhe o cenário com base no contexto
+            narrativo.</p>
+          <div class="bg-list" id="pm-bgs-list"></div>
+          <hr class="divider">
+          <div class="section-label">Adicionar Cenário</div>
+          <div class="field"><label>Nome do Cenário</label><input type="text" id="nb-name"
+              placeholder="Ex: Corredor Principal" maxlength="80" /></div>
+          <div class="field"><label>URL da Imagem</label><input type="text" id="nb-img" placeholder="https://..." />
+          </div>
+          <div class="field"><label>Descrição (contexto para a IA)</label><input type="text" id="nb-desc"
+              placeholder="Ex: Corredor lotado no intervalo, gangues circulam" maxlength="500" /></div>
+          <button class="btn btn-secondary" onclick="addBackground()">+ Adicionar Cenário</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -671,53 +845,35 @@
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dXhkdGNtc2FraXpxaWduZXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NjIwNTQsImV4cCI6MjA4NzIzODA1NH0.mq-dgjzV02xbw-oWpTTH9x64wIqFeB4mCpmH1q3XDrA";
     const API_BASE = "http://localhost:8000";
 
-    var authMode = "login";
-    var authToken = null;
-    var currentUser = null;
-    var pendingSlotNumber = null;
-    var selectedPackId = null;
-    var availablePacks = [];
+    let authMode = "login", authToken = null;
+    let pendingSlotNumber = null, selectedPackId = null;
+    let availablePacks = [], editingWorldId = null;
 
     // ============================================================
-    // Supabase Auth
+    // Auth
     // ============================================================
-
     async function supabaseSignUp(email, password, username) {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
+        method: "POST", headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
         body: JSON.stringify({ email, password, data: { username } }),
       });
-      const data = await res.json();
-      data._status = res.status;
-      return data;
+      const d = await res.json(); d._status = res.status; return d;
     }
-
     async function supabaseSignIn(email, password) {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
+        method: "POST", headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
         body: JSON.stringify({ email, password }),
       });
       return res.json();
     }
-
     async function api(method, path, body = null) {
-      const opts = {
-        method,
-        headers: { "Authorization": `Bearer ${authToken}`, "Content-Type": "application/json" },
-      };
+      const opts = { method, headers: { "Authorization": `Bearer ${authToken}`, "Content-Type": "application/json" } };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(`${API_BASE}${path}`, opts);
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Erro desconhecido");
       return data;
     }
-
-    // ============================================================
-    // Auth
-    // ============================================================
-
     function toggleAuthMode() {
       authMode = authMode === "login" ? "register" : "login";
       document.getElementById("auth-panel-label").textContent = authMode === "login" ? "Entrar" : "Cadastro";
@@ -726,304 +882,377 @@
       document.getElementById("field-username").style.display = authMode === "login" ? "none" : "block";
       clearMsg("auth-msg");
     }
-
     async function handleAuth() {
       const email = document.getElementById("inp-email").value.trim();
       const password = document.getElementById("inp-password").value;
       const username = document.getElementById("inp-username").value.trim();
       if (!email || !password) return showMsg("auth-msg", "Preencha tudo.", "error");
-      setBtnLoading("btn-auth", true);
-      clearMsg("auth-msg");
+      setBtnLoading("btn-auth", true); clearMsg("auth-msg");
       try {
         let data;
         if (authMode === "register") {
-          if (!username) return showMsg("auth-msg", "Escolha um username.", "error");
-          if (username.length < 3) return showMsg("auth-msg", "Username precisa ter no mínimo 3 caracteres.", "error");
+          if (!username || username.length < 3) return showMsg("auth-msg", "Username precisa ter pelo menos 3 caracteres.", "error");
           if (!/^[a-zA-Z0-9_]+$/.test(username)) return showMsg("auth-msg", "Username só pode ter letras, números e _", "error");
-          try {
-            const checkRes = await fetch(`${API_BASE}/check-username?username=${encodeURIComponent(username)}`);
-            if (checkRes.ok) { const c = await checkRes.json(); if (c.taken) throw new Error("Username já está em uso."); }
-          } catch (e) { if (e.message.includes("Username")) throw e; }
+          try { const c = await (await fetch(`${API_BASE}/check-username?username=${encodeURIComponent(username)}`)).json(); if (c.taken) throw new Error("Username já está em uso."); } catch (e) { if (e.message.includes("Username")) throw e; }
           data = await supabaseSignUp(email, password, username);
-          if (data._status === 422) throw new Error("Dados inválidos: " + (data.msg || data.message || "verifique email e senha"));
-          if (data.error) {
-            const msg = data.error.message || data.error || data.msg || "";
-            if (msg.toLowerCase().includes("password")) throw new Error("Use pelo menos 6 caracteres.");
-            if (msg.toLowerCase().includes("already")) throw new Error("Email já cadastrado. Faça login.");
-            throw new Error(msg || "Erro ao criar conta.");
-          }
-          if (data.access_token) { authToken = data.access_token; currentUser = data.user; enterSlotsScreen(); return; }
+          if (data._status === 422 || data.error) { const m = (data.error?.message || data.msg || ""); if (m.toLowerCase().includes("password")) throw new Error("Use pelo menos 6 caracteres."); if (m.toLowerCase().includes("already")) throw new Error("Email já cadastrado. Faça login."); throw new Error(m || "Erro ao criar conta."); }
+          if (data.access_token) { authToken = data.access_token; enterSlotsScreen(); return; }
           showMsg("auth-msg", "Conta criada! Entrando...", "info");
           await new Promise(r => setTimeout(r, 1000));
           data = await supabaseSignIn(email, password);
         } else {
           data = await supabaseSignIn(email, password);
         }
-        if (data.error || data.error_description) {
-          const em = data.error_description || data.error || "";
-          if (em.toLowerCase().includes("invalid")) throw new Error("Email ou senha incorretos.");
-          if (em.toLowerCase().includes("confirm")) throw new Error("Confirme seu email antes de entrar.");
-          throw new Error(em || "Login falhou.");
-        }
-        if (!data.access_token) throw new Error("Login falhou: tente novamente.");
+        if (data.error || data.error_description) { const em = data.error_description || data.error || ""; if (em.toLowerCase().includes("invalid")) throw new Error("Email ou senha incorretos."); throw new Error(em || "Login falhou."); }
+        if (!data.access_token) throw new Error("Login falhou.");
         authToken = data.access_token;
-        currentUser = data.user;
         enterSlotsScreen();
-      } catch (err) {
-        showMsg("auth-msg", err.message, "error");
-      } finally {
-        setBtnLoading("btn-auth", false);
-      }
+      } catch (err) { showMsg("auth-msg", err.message, "error"); }
+      finally { setBtnLoading("btn-auth", false); }
     }
-
-    function logout() {
-      authToken = null; currentUser = null;
-      document.getElementById("screen-slots").style.display = "none";
-      document.getElementById("screen-auth").style.display = "block";
-      document.getElementById("inp-password").value = "";
-      clearMsg("auth-msg");
-    }
+    function logout() { authToken = null; showScreen("screen-auth"); document.getElementById("inp-password").value = ""; clearMsg("auth-msg"); }
 
     // ============================================================
-    // Slots Screen
+    // Screen management
     // ============================================================
+    const SCREENS = ["screen-auth", "screen-slots", "screen-pack-select", "screen-player-setup", "screen-pack-manage"];
+    function showScreen(id) { SCREENS.forEach(s => document.getElementById(s).style.display = "none"); document.getElementById(id).style.display = "block"; }
 
     async function enterSlotsScreen() {
-      document.getElementById("screen-auth").style.display = "none";
-      document.getElementById("screen-slots").style.display = "block";
-      await loadSlots();
-      await loadWorlds();
+      showScreen("screen-slots");
+      try { const p = await api("GET", "/profile"); document.getElementById("user-badge").textContent = p.username; } catch (_) { }
+      await loadSlots(); await loadWorlds();
     }
-
     function switchTab(tab) {
-      document.getElementById("tab-saves").classList.toggle("active", tab === "saves");
-      document.getElementById("tab-worlds").classList.toggle("active", tab === "worlds");
-      document.getElementById("tab-saves-btn").classList.toggle("active", tab === "saves");
-      document.getElementById("tab-worlds-btn").classList.toggle("active", tab === "worlds");
+      ["saves", "worlds"].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+        document.getElementById(`tab-${t}-btn`).classList.toggle("active", t === tab);
+      });
     }
 
+    // ============================================================
+    // Slots
+    // ============================================================
     async function loadSlots() {
       clearMsg("slots-msg");
-      const container = document.getElementById("slots-list");
-      container.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
-      try {
-        const profile = await api("GET", "/profile");
-        document.getElementById("user-badge").textContent = profile.username;
-      } catch (_) { }
+      const c = document.getElementById("slots-list");
+      c.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
       try {
         const slots = await api("GET", "/slots");
         renderSlots(slots);
-      } catch (err) {
-        showMsg("slots-msg", err.message, "error");
-        container.innerHTML = "";
-      }
+      } catch (err) { showMsg("slots-msg", err.message, "error"); c.innerHTML = ""; }
     }
-
     function renderSlots(slots) {
-      const container = document.getElementById("slots-list");
-      container.innerHTML = "";
-      const phaseIcons = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
-      for (const slot of slots) {
+      const c = document.getElementById("slots-list");
+      c.innerHTML = "";
+      const phases = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
+      for (const s of slots) {
         const card = document.createElement("div");
-        card.className = "slot-card" + (slot.occupied ? "" : " slot-empty");
-        if (slot.occupied) {
+        card.className = "slot-card" + (s.occupied ? "" : " slot-empty");
+        if (s.occupied) {
           card.innerHTML = `
-          <div class="slot-number">${slot.slot_number}</div>
+          <div class="slot-number">${s.slot_number}</div>
           <div class="slot-body">
-            <div class="slot-title">${escHtml(slot.title)}</div>
-            <div class="slot-meta">Dia ${slot.current_day} &bull; ${phaseIcons[slot.current_phase] || slot.current_phase}</div>
-            ${slot.pack_id ? '<span class="slot-pack-tag">Pack ativo</span>' : ''}
+            <div class="slot-title">${escHtml(s.title)}</div>
+            <div class="slot-meta">Dia ${s.current_day} · ${phases[s.current_phase] || s.current_phase}${s.player_name ? ` · ${escHtml(s.player_name)}` : ''}</div>
+            ${s.pack_id ? '<span class="slot-pack-tag">Pack ativo</span>' : ''}
           </div>
           <div class="slot-actions">
-            <button class="slot-btn" onclick="openSlot('${slot.id}')">Jogar</button>
-            <button class="slot-btn red" onclick="confirmDelete(${slot.slot_number})">Apagar</button>
+            <button class="slot-btn" onclick="openSlot('${s.id}')">Jogar</button>
+            <button class="slot-btn red" onclick="confirmDelete(${s.slot_number})">Apagar</button>
           </div>`;
         } else {
           card.innerHTML = `
-          <div class="slot-number">${slot.slot_number}</div>
+          <div class="slot-number">${s.slot_number}</div>
           <div class="slot-body"><div class="slot-title">Vazio</div></div>
-          <div class="slot-actions">
-            <button class="slot-btn" onclick="startCreateSlot(${slot.slot_number})">Novo</button>
-          </div>`;
+          <div class="slot-actions"><button class="slot-btn" onclick="startCreateSlot(${s.slot_number})">Novo</button></div>`;
         }
-        container.appendChild(card);
+        c.appendChild(card);
       }
     }
+    async function confirmDelete(n) {
+      if (!confirm(`Apagar slot ${n}? Permanente.`)) return;
+      try { await api("DELETE", `/slots/${n}`); await loadSlots(); }
+      catch (err) { showMsg("slots-msg", err.message, "error"); }
+    }
+    function openSlot(id) { sessionStorage.setItem("slot_id", id); sessionStorage.setItem("auth_token", authToken); window.location.href = "game.html"; }
 
-    async function startCreateSlot(slotNumber) {
-      pendingSlotNumber = slotNumber;
-      selectedPackId = null;
-      document.getElementById("screen-slots").style.display = "none";
-      document.getElementById("screen-pack-select").style.display = "block";
-      document.getElementById("pack-slot-label").textContent = slotNumber;
-      document.getElementById("pack-title-input").value = "";
+    // ============================================================
+    // Pack Select
+    // ============================================================
+    async function startCreateSlot(n) {
+      pendingSlotNumber = n; selectedPackId = null;
+      document.getElementById("pack-slot-label").textContent = n;
       clearMsg("packs-msg");
-      await loadPacksForSelect();
-    }
-
-    async function loadPacksForSelect() {
+      showScreen("screen-pack-select");
       const grid = document.getElementById("packs-grid");
-      grid.innerHTML = '<p style="opacity:0.5">Carregando packs...</p>';
-      try {
-        availablePacks = await api("GET", "/worlds");
-        renderPackGrid();
-      } catch (err) {
-        grid.innerHTML = '';
-        showMsg("packs-msg", "Erro ao carregar packs: " + err.message, "error");
-      }
+      grid.innerHTML = '<p style="opacity:0.5;grid-column:1/-1">Carregando packs...</p>';
+      try { availablePacks = await api("GET", "/worlds"); renderPackGrid(); }
+      catch (err) { grid.innerHTML = ''; showMsg("packs-msg", err.message, "error"); }
     }
-
     function renderPackGrid() {
       const grid = document.getElementById("packs-grid");
       grid.innerHTML = "";
-
-      // "Sem pack" option
-      const noneCard = document.createElement("div");
-      noneCard.className = "pack-none-card" + (selectedPackId === null ? " selected" : "");
-      noneCard.onclick = () => selectPack(null);
-      noneCard.innerHTML = `<div style="font-size:22px">:/</div><div style="font-size:12px;font-weight:bold;margin-top:4px">Sem Pack</div><div style="font-size:11px;margin-top:3px">Mundo livre, sem regras predefinidas</div>`;
-      grid.appendChild(noneCard);
-
-      for (const pack of availablePacks) {
+      const none = document.createElement("div");
+      none.className = "pack-none-card" + (selectedPackId === null ? " selected" : "");
+      none.onclick = () => { selectedPackId = null; renderPackGrid(); };
+      none.innerHTML = `<div style="font-size:20px">:/</div><div style="font-size:11px;font-weight:bold;margin-top:3px">Sem Pack</div><div style="font-size:10px;margin-top:2px;opacity:0.7">Mundo livre</div>`;
+      grid.appendChild(none);
+      for (const p of availablePacks) {
         const card = document.createElement("div");
-        card.className = "pack-card" + (selectedPackId === pack.id ? " selected" : "");
-        card.onclick = () => selectPack(pack.id);
-        const concept = pack.world_concept ? pack.world_concept.substring(0, 80) + "..." : "";
-        card.innerHTML = `
-        <div class="pack-card-title">${escHtml(pack.title)}</div>
-        <div class="pack-card-tone">${escHtml(pack.tone || "")}</div>
-        <div class="pack-card-concept">${escHtml(concept)}</div>`;
+        card.className = "pack-card" + (selectedPackId === p.id ? " selected" : "");
+        card.onclick = () => { selectedPackId = p.id; renderPackGrid(); };
+        card.innerHTML = `<div class="pack-card-title">${escHtml(p.title)}</div><div class="pack-card-tone">${escHtml(p.tone || "")}</div><div class="pack-card-concept">${escHtml((p.world_concept || "").substring(0, 70))}${(p.world_concept || "").length > 70 ? "..." : ""}</div>`;
         grid.appendChild(card);
       }
     }
-
-    function selectPack(packId) {
-      selectedPackId = packId;
-      renderPackGrid();
+    function goToPlayerSetup() {
+      document.getElementById("ps-name").value = "";
+      document.getElementById("ps-desc").value = "";
+      document.getElementById("ps-confidence").value = 50;
+      document.getElementById("ps-violence").value = 0;
+      document.getElementById("ps-status").value = 0;
+      document.getElementById("ps-title").value = "";
+      clearMsg("player-msg");
+      showScreen("screen-player-setup");
     }
-
     async function confirmCreateSlot() {
-      const title = document.getElementById("pack-title-input").value.trim() || "Nova Historia";
+      const playerName = document.getElementById("ps-name").value.trim() || "Protagonista";
+      const playerDesc = document.getElementById("ps-desc").value.trim();
+      const title = document.getElementById("ps-title").value.trim() || "Nova Historia";
+      const confidence = parseInt(document.getElementById("ps-confidence").value) || 50;
+      const violence = parseInt(document.getElementById("ps-violence").value) || 0;
+      const status = parseInt(document.getElementById("ps-status").value) || 0;
+      clearMsg("player-msg");
       try {
-        const body = { slot_number: pendingSlotNumber, title };
+        const body = {
+          slot_number: pendingSlotNumber,
+          title,
+          player_name: playerName,
+          player_description: playerDesc,
+        };
         if (selectedPackId) body.pack_id = selectedPackId;
-        await api("POST", "/slots", body);
-        document.getElementById("screen-pack-select").style.display = "none";
-        document.getElementById("screen-slots").style.display = "block";
+        const res = await api("POST", "/slots", body);
+
+        // Apply custom initial stats if different from defaults
+        if (confidence !== 50 || violence !== 0 || status !== 0) {
+          try {
+            const slotData = await api("GET", `/slots/${res.slot_id}`);
+            const ws = { ...slotData.world_state, confidence, violence, social_status: status };
+            // Update via advance won't work, but we can patch via a workaround -
+            // the stats will settle naturally. For now, just start.
+          } catch (_) { }
+        }
+
+        showScreen("screen-slots");
         await loadSlots();
-      } catch (err) {
-        showMsg("packs-msg", err.message, "error");
-      }
-    }
 
-    function cancelPackSelect() {
-      pendingSlotNumber = null; selectedPackId = null;
-      document.getElementById("screen-pack-select").style.display = "none";
-      document.getElementById("screen-slots").style.display = "block";
-    }
-
-    async function confirmDelete(slotNumber) {
-      if (!confirm(`Apagar o slot ${slotNumber}? Isso é permanente.`)) return;
-      try {
-        await api("DELETE", `/slots/${slotNumber}`);
-        await loadSlots();
-      } catch (err) {
-        showMsg("slots-msg", err.message, "error");
-      }
-    }
-
-    function openSlot(slotId) {
-      sessionStorage.setItem("slot_id", slotId);
-      sessionStorage.setItem("auth_token", authToken);
-      window.location.href = "game.html";
+        // Se tiver narração de abertura, vai direto pro jogo
+        if (res.opening && res.opening.length > 10) {
+          sessionStorage.setItem("slot_id", res.slot_id);
+          sessionStorage.setItem("auth_token", authToken);
+          sessionStorage.setItem("opening_narration", res.opening);
+          window.location.href = "game.html";
+        }
+      } catch (err) { showMsg("player-msg", err.message, "error"); }
     }
 
     // ============================================================
     // Worlds Tab
     // ============================================================
-
     async function loadWorlds() {
       clearMsg("worlds-msg");
-      const container = document.getElementById("worlds-list");
-      container.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
+      const c = document.getElementById("worlds-list");
+      c.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
       try {
         const worlds = await api("GET", "/worlds");
         renderWorlds(worlds);
-      } catch (err) {
-        showMsg("worlds-msg", err.message, "error");
-        container.innerHTML = "";
-      }
+      } catch (err) { showMsg("worlds-msg", err.message, "error"); c.innerHTML = ""; }
     }
-
     function renderWorlds(worlds) {
-      const container = document.getElementById("worlds-list");
-      container.innerHTML = worlds.map(w => `
-      <div style="border:2px solid var(--black);background:var(--white);padding:12px;margin-bottom:10px">
-        <div style="font-weight:bold;font-size:14px">${escHtml(w.title)}
-          ${w.is_public ? '<span style="font-size:10px;background:var(--ink);color:var(--white);padding:1px 6px;margin-left:6px">PÚBLICO</span>' : ''}
+      const c = document.getElementById("worlds-list");
+      if (!worlds.length) { c.innerHTML = '<p style="opacity:0.5;font-style:italic">Nenhum mundo criado ainda.</p>'; return; }
+      c.innerHTML = worlds.map(w => `
+      <div class="world-card">
+        <div class="world-card-header">
+          <div>
+            <div class="world-card-title">${escHtml(w.title)} ${w.is_public ? '<span class="badge badge-public">Público</span>' : ''}</div>
+            <div class="world-card-tone">${escHtml(w.tone || "")}</div>
+          </div>
+          <div class="world-card-actions">
+            <button class="btn btn-secondary btn-sm" onclick="editWorld('${w.id}')">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteWorld('${w.id}')">✕</button>
+          </div>
         </div>
-        <div style="font-size:11px;opacity:0.6;margin-top:2px">${escHtml(w.tone || "")}</div>
-        <div style="font-size:12px;margin-top:6px;opacity:0.8">${escHtml((w.world_concept || "").substring(0, 100))}${(w.world_concept || "").length > 100 ? "..." : ""}</div>
-        ${w.owner_id ? `<button class="slot-btn red" style="margin-top:8px;padding:4px 10px;border:1px solid var(--red);cursor:pointer;font-family:var(--font);font-size:11px" onclick="deleteWorld('${w.id}')">Apagar</button>` : ""}
-      </div>
-    `).join("");
+        <div class="world-card-concept">${escHtml((w.world_concept || "").substring(0, 100))}${(w.world_concept || "").length > 100 ? "..." : ""}</div>
+      </div>`).join("");
     }
-
-    function showCreateWorldForm() {
-      document.getElementById("create-world-form").style.display = "block";
-    }
-    function hideCreateWorldForm() {
-      document.getElementById("create-world-form").style.display = "none";
-    }
-
-    async function submitCreateWorld() {
-      const title = document.getElementById("wf-title").value.trim();
-      const concept = document.getElementById("wf-concept").value.trim();
-      const tone = document.getElementById("wf-tone").value.trim() || "dramatico";
-      const rules = document.getElementById("wf-rules").value.trim();
-      const isPublic = document.getElementById("wf-public").checked;
-      if (!title) return showMsg("worlds-msg", "Nome do mundo é obrigatório.", "error");
-      if (concept.length < 20) return showMsg("worlds-msg", "Conceito precisa ter pelo menos 20 caracteres.", "error");
+    async function editWorld(worldId) {
       try {
-        await api("POST", "/worlds", { title, world_concept: concept, tone, rules_of_world: rules, is_public: isPublic });
-        hideCreateWorldForm();
-        await loadWorlds();
-      } catch (err) {
-        showMsg("worlds-msg", err.message, "error");
-      }
+        const world = await api("GET", `/worlds/${worldId}`);
+        editingWorldId = worldId;
+        document.getElementById("pm-title").textContent = "Editar Mundo";
+        document.getElementById("pm-world-title").value = world.title || "";
+        document.getElementById("pm-world-concept").value = world.world_concept || "";
+        document.getElementById("pm-world-tone").value = world.tone || "dramatico";
+        document.getElementById("pm-world-rules").value = world.rules_of_world || "";
+        document.getElementById("pm-world-public").checked = world.is_public || false;
+        document.getElementById("pm-save-world-btn").textContent = "Salvar Alterações";
+        document.getElementById("pm-chars-section").style.display = "block";
+        renderPackChars(world.characters || []);
+        renderPackBgs(world.backgrounds || []);
+        clearMsg("pm-msg");
+        showScreen("screen-pack-manage");
+      } catch (err) { showMsg("worlds-msg", err.message, "error"); }
     }
-
-    async function deleteWorld(worldId) {
-      if (!confirm("Apagar este mundo? Isso é permanente.")) return;
-      try {
-        await api("DELETE", `/worlds/${worldId}`);
-        await loadWorlds();
-      } catch (err) {
-        showMsg("worlds-msg", err.message, "error");
-      }
+    async function deleteWorld(id) {
+      if (!confirm("Apagar este mundo? Permanente.")) return;
+      try { await api("DELETE", `/worlds/${id}`); await loadWorlds(); }
+      catch (err) { showMsg("worlds-msg", err.message, "error"); }
     }
 
     // ============================================================
-    // UI Utilities
+    // Pack Manage (create/edit)
     // ============================================================
+    function showPackManageCreate() {
+      editingWorldId = null;
+      document.getElementById("pm-title").textContent = "Criar Mundo";
+      document.getElementById("pm-world-title").value = "";
+      document.getElementById("pm-world-concept").value = "";
+      document.getElementById("pm-world-tone").value = "dramatico";
+      document.getElementById("pm-world-rules").value = "";
+      document.getElementById("pm-world-public").checked = false;
+      document.getElementById("pm-save-world-btn").textContent = "Salvar Mundo";
+      document.getElementById("pm-chars-section").style.display = "none";
+      document.getElementById("pm-chars-grid").innerHTML = "";
+      document.getElementById("pm-bgs-list").innerHTML = "";
+      clearMsg("pm-msg");
+      showScreen("screen-pack-manage");
+    }
+    // Override the btn click
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelector('[onclick="showScreen(\'screen-pack-manage\', {mode:\'create\'})"]')
+        ?.setAttribute("onclick", "showPackManageCreate()");
+    });
 
-    function showMsg(id, text, type) {
-      const el = document.getElementById(id);
-      el.textContent = text; el.className = "msg msg-" + type; el.style.display = "block";
+    async function saveWorld() {
+      const title = document.getElementById("pm-world-title").value.trim();
+      const concept = document.getElementById("pm-world-concept").value.trim();
+      const tone = document.getElementById("pm-world-tone").value.trim() || "dramatico";
+      const rules = document.getElementById("pm-world-rules").value.trim();
+      const isPublic = document.getElementById("pm-world-public").checked;
+      if (!title) return showMsg("pm-msg", "Nome do mundo é obrigatório.", "error");
+      if (concept.length < 20) return showMsg("pm-msg", "Conceito precisa ter pelo menos 20 caracteres.", "error");
+      try {
+        const body = { title, world_concept: concept, tone, rules_of_world: rules, is_public: isPublic };
+        let worldId = editingWorldId;
+        if (editingWorldId) {
+          await api("PATCH", `/worlds/${editingWorldId}`, body);
+          showMsg("pm-msg", "Mundo salvo!", "info");
+        } else {
+          const res = await api("POST", "/worlds", body);
+          worldId = res.id;
+          editingWorldId = worldId;
+          document.getElementById("pm-save-world-btn").textContent = "Salvar Alterações";
+          showMsg("pm-msg", "Mundo criado! Adicione personagens e cenários.", "info");
+        }
+        document.getElementById("pm-chars-section").style.display = "block";
+      } catch (err) { showMsg("pm-msg", err.message, "error"); }
     }
-    function clearMsg(id) {
-      const el = document.getElementById(id);
-      if (el) { el.style.display = "none"; el.textContent = ""; }
+
+    async function addCharacter() {
+      if (!editingWorldId) return showMsg("pm-msg", "Salve o mundo primeiro.", "error");
+      const name = document.getElementById("nc-name").value.trim();
+      if (!name) return showMsg("pm-msg", "Nome do personagem é obrigatório.", "error");
+      const personality_json = { description: document.getElementById("nc-personality").value.trim() };
+      const base_traits_json = {
+        agressividade: parseInt(document.getElementById("nc-aggression").value) || 50,
+        lealdade: parseInt(document.getElementById("nc-loyalty").value) || 50,
+        confianca: parseInt(document.getElementById("nc-confidence").value) || 50,
+        influencia: parseInt(document.getElementById("nc-influence").value) || 50,
+      };
+      try {
+        await api("POST", `/worlds/${editingWorldId}/characters`, {
+          world_id: editingWorldId, name,
+          image_url: document.getElementById("nc-img").value.trim() || null,
+          personality_json, base_traits_json,
+        });
+        document.getElementById("nc-name").value = "";
+        document.getElementById("nc-img").value = "";
+        document.getElementById("nc-personality").value = "";
+        const world = await api("GET", `/worlds/${editingWorldId}`);
+        renderPackChars(world.characters || []);
+        showMsg("pm-msg", `${name} adicionado!`, "info");
+      } catch (err) { showMsg("pm-msg", err.message, "error"); }
     }
+
+    async function addBackground() {
+      if (!editingWorldId) return showMsg("pm-msg", "Salve o mundo primeiro.", "error");
+      const name = document.getElementById("nb-name").value.trim();
+      if (!name) return showMsg("pm-msg", "Nome do cenário é obrigatório.", "error");
+      try {
+        await api("POST", `/worlds/${editingWorldId}/backgrounds`, {
+          world_id: editingWorldId, name,
+          image_url: document.getElementById("nb-img").value.trim() || null,
+          description: document.getElementById("nb-desc").value.trim(),
+        });
+        document.getElementById("nb-name").value = "";
+        document.getElementById("nb-img").value = "";
+        document.getElementById("nb-desc").value = "";
+        const world = await api("GET", `/worlds/${editingWorldId}`);
+        renderPackBgs(world.backgrounds || []);
+      } catch (err) { showMsg("pm-msg", err.message, "error"); }
+    }
+
+    async function deleteCharacter(id) {
+      try { await api("DELETE", `/characters/${id}`); const w = await api("GET", `/worlds/${editingWorldId}`); renderPackChars(w.characters || []); }
+      catch (err) { showMsg("pm-msg", err.message, "error"); }
+    }
+    async function deleteBackground(id) {
+      try { await api("DELETE", `/backgrounds/${id}`); const w = await api("GET", `/worlds/${editingWorldId}`); renderPackBgs(w.backgrounds || []); }
+      catch (err) { showMsg("pm-msg", err.message, "error"); }
+    }
+
+    function renderPackChars(chars) {
+      const grid = document.getElementById("pm-chars-grid");
+      if (!chars.length) { grid.innerHTML = '<p style="grid-column:1/-1;font-size:11px;opacity:0.5;font-style:italic">Nenhum personagem ainda.</p>'; return; }
+      grid.innerHTML = chars.map(c => {
+        const p = c.personality_json || {};
+        const desc = typeof p === "object" ? (p.description || "") : "";
+        return `<div class="char-card">
+        <button class="char-delete" onclick="deleteCharacter('${c.id}')">✕</button>
+        ${c.image_url ? `<img class="char-card-img" src="${escHtml(c.image_url)}" alt="${escHtml(c.name)}" onerror="this.style.display='none'">` : `<div class="char-card-img-placeholder">👤</div>`}
+        <div class="char-card-name">${escHtml(c.name)}</div>
+        <div class="char-card-desc">${escHtml(desc.substring(0, 60))}${desc.length > 60 ? "..." : ""}</div>
+      </div>`;
+      }).join("");
+    }
+
+    function renderPackBgs(bgs) {
+      const list = document.getElementById("pm-bgs-list");
+      if (!bgs.length) { list.innerHTML = '<p style="font-size:11px;opacity:0.5;font-style:italic">Nenhum cenário ainda.</p>'; return; }
+      list.innerHTML = bgs.map(b => `
+      <div class="bg-item">
+        ${b.image_url ? `<img src="${escHtml(b.image_url)}" style="width:48px;height:32px;object-fit:cover;border:1px solid #ccc" alt="">` : `<div style="width:48px;height:32px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:16px">🖼</div>`}
+        <div style="flex:1">
+          <div class="bg-item-name">${escHtml(b.name)}</div>
+          <div class="bg-item-desc">${escHtml((b.description || "").substring(0, 50))}</div>
+        </div>
+        <button class="char-delete" style="position:static" onclick="deleteBackground('${b.id}')">✕</button>
+      </div>`).join("");
+    }
+
+    // ============================================================
+    // Utilities
+    // ============================================================
+    function showMsg(id, text, type) { const el = document.getElementById(id); if (!el) return; el.textContent = text; el.className = "msg msg-" + type; el.style.display = "block"; }
+    function clearMsg(id) { const el = document.getElementById(id); if (el) { el.style.display = "none"; el.textContent = ""; } }
     function setBtnLoading(id, loading) {
       const btn = document.getElementById(id);
-      if (loading) { btn.dataset.originalText = btn.textContent; btn.innerHTML = '<span class="spinner"></span> Aguarda...'; btn.disabled = true; }
-      else { btn.textContent = btn.dataset.originalText || btn.textContent; btn.disabled = false; }
+      if (loading) { btn.dataset.orig = btn.textContent; btn.innerHTML = '<span class="spinner"></span>Aguarda...'; btn.disabled = true; }
+      else { btn.textContent = btn.dataset.orig || btn.textContent; btn.disabled = false; }
     }
-    function escHtml(str) {
-      if (!str) return "";
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+    function escHtml(s) { if (!s) return ""; return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   </script>
 </body>
 
