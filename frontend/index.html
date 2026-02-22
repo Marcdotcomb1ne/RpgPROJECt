@@ -590,6 +590,57 @@
       font-family: var(--font);
     }
 
+    .char-edit {
+      position: absolute;
+      top: 4px;
+      right: 28px;
+      background: var(--ink);
+      color: var(--white);
+      border: none;
+      font-size: 10px;
+      padding: 1px 5px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+
+    /* Edit char modal */
+    .edit-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.7);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .edit-modal.open {
+      display: flex;
+    }
+
+    .edit-modal-box {
+      background: var(--panel);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .edit-modal-title {
+      font-size: 13px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--black);
+    }
+
     .bg-list {
       display: flex;
       flex-direction: column;
@@ -840,6 +891,35 @@
 
   </div>
 
+  <!-- Edit Character Modal -->
+  <div class="edit-modal" id="edit-char-modal">
+    <div class="edit-modal-box">
+      <div class="edit-modal-title">Editar Personagem</div>
+      <div id="edit-char-msg" style="display:none" class="msg"></div>
+      <input type="hidden" id="edit-char-id" />
+      <div class="field"><label>Nome</label><input type="text" id="edit-char-name" maxlength="80" /></div>
+      <div class="field"><label>URL da Imagem</label><input type="text" id="edit-char-img" placeholder="https://..." />
+      </div>
+      <div class="field"><label>Descrição / Personalidade</label><textarea id="edit-char-personality"
+          style="min-height:80px"></textarea></div>
+      <div class="section-label" style="margin-bottom:8px">Atributos</div>
+      <div class="trait-row">
+        <div class="field"><label>Agressividade (0-100)</label><input type="number" id="edit-char-aggression" min="0"
+            max="100" /></div>
+        <div class="field"><label>Lealdade (0-100)</label><input type="number" id="edit-char-loyalty" min="0"
+            max="100" /></div>
+      </div>
+      <div class="trait-row">
+        <div class="field"><label>Confiança (0-100)</label><input type="number" id="edit-char-confidence" min="0"
+            max="100" /></div>
+        <div class="field"><label>Influência (0-100)</label><input type="number" id="edit-char-influence" min="0"
+            max="100" /></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveCharEdit()" style="margin-top:4px">Salvar</button>
+      <button class="btn btn-secondary" onclick="closeCharEdit()">Cancelar</button>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = "https://bvuxdtcmsakizqigneuk.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dXhkdGNtc2FraXpxaWduZXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NjIwNTQsImV4cCI6MjA4NzIzODA1NH0.mq-dgjzV02xbw-oWpTTH9x64wIqFeB4mCpmH1q3XDrA";
@@ -895,7 +975,7 @@
           if (!/^[a-zA-Z0-9_]+$/.test(username)) return showMsg("auth-msg", "Username só pode ter letras, números e _", "error");
           try { const c = await (await fetch(`${API_BASE}/check-username?username=${encodeURIComponent(username)}`)).json(); if (c.taken) throw new Error("Username já está em uso."); } catch (e) { if (e.message.includes("Username")) throw e; }
           data = await supabaseSignUp(email, password, username);
-          if (data._status === 422 || data.error) { const m = (data.error?.message || data.msg || ""); if (m.toLowerCase().includes("password")) throw new Error("Use pelo menos 6 caracteres."); if (m.toLowerCase().includes("already")) throw new Error("Email já cadastrado. Faça login."); throw new Error(m || "Erro ao criar conta."); }
+          if (data._status === 422 || data.error) { const m = (data.error?.message || data.msg || ""); if (m.toLowerCase().includes("password")) throw new Error("A senha precisa de pelo menos 6 caracteres."); if (m.toLowerCase().includes("already")) throw new Error("Email já cadastrado. Faça login."); throw new Error(m || "Erro ao criar conta."); }
           if (data.access_token) { authToken = data.access_token; enterSlotsScreen(); return; }
           showMsg("auth-msg", "Conta criada! Entrando...", "info");
           await new Promise(r => setTimeout(r, 1000));
@@ -1034,13 +1114,12 @@
         if (selectedPackId) body.pack_id = selectedPackId;
         const res = await api("POST", "/slots", body);
 
-        // Apply custom initial stats if different from defaults
+        // Aplica atributos iniciais do personagem
         if (confidence !== 50 || violence !== 0 || status !== 0) {
           try {
-            const slotData = await api("GET", `/slots/${res.slot_id}`);
-            const ws = { ...slotData.world_state, confidence, violence, social_status: status };
-            // Update via advance won't work, but we can patch via a workaround -
-            // the stats will settle naturally. For now, just start.
+            await api("PATCH", `/slots/${res.slot_id}/world-state`, {
+              world_state_patch: { confidence, violence, social_status: status },
+            });
           } catch (_) { }
         }
 
@@ -1213,15 +1292,62 @@
       catch (err) { showMsg("pm-msg", err.message, "error"); }
     }
 
+    // Edit character modal
+    function openCharEdit(char) {
+      const p = typeof char.personality_json === "object" ? char.personality_json : {};
+      const t = typeof char.base_traits_json === "object" ? char.base_traits_json : {};
+      document.getElementById("edit-char-id").value = char.id;
+      document.getElementById("edit-char-name").value = char.name || "";
+      document.getElementById("edit-char-img").value = char.image_url || "";
+      document.getElementById("edit-char-personality").value = p.description || p.descricao || "";
+      document.getElementById("edit-char-aggression").value = t.agressividade ?? 50;
+      document.getElementById("edit-char-loyalty").value = t.lealdade ?? 50;
+      document.getElementById("edit-char-confidence").value = t.confianca ?? 50;
+      document.getElementById("edit-char-influence").value = t.influencia ?? 50;
+      clearMsg("edit-char-msg");
+      document.getElementById("edit-char-modal").classList.add("open");
+    }
+    function closeCharEdit() {
+      document.getElementById("edit-char-modal").classList.remove("open");
+    }
+    async function saveCharEdit() {
+      const id = document.getElementById("edit-char-id").value;
+      const name = document.getElementById("edit-char-name").value.trim();
+      if (!name) return showMsg("edit-char-msg", "Nome é obrigatório.", "error");
+      const body = {
+        name,
+        image_url: document.getElementById("edit-char-img").value.trim() || null,
+        personality_json: { description: document.getElementById("edit-char-personality").value.trim() },
+        base_traits_json: {
+          agressividade: parseInt(document.getElementById("edit-char-aggression").value) || 50,
+          lealdade: parseInt(document.getElementById("edit-char-loyalty").value) || 50,
+          confianca: parseInt(document.getElementById("edit-char-confidence").value) || 50,
+          influencia: parseInt(document.getElementById("edit-char-influence").value) || 50,
+        },
+      };
+      try {
+        await api("PATCH", `/characters/${id}`, body);
+        closeCharEdit();
+        const w = await api("GET", `/worlds/${editingWorldId}`);
+        renderPackChars(w.characters || []);
+        showMsg("pm-msg", `${name} atualizado!`, "info");
+      } catch (err) { showMsg("edit-char-msg", err.message, "error"); }
+    }
+
     function renderPackChars(chars) {
       const grid = document.getElementById("pm-chars-grid");
       if (!chars.length) { grid.innerHTML = '<p style="grid-column:1/-1;font-size:11px;opacity:0.5;font-style:italic">Nenhum personagem ainda.</p>'; return; }
-      grid.innerHTML = chars.map(c => {
+      // Store chars data for edit modal access
+      window._packChars = chars;
+      grid.innerHTML = chars.map((c, i) => {
         const p = c.personality_json || {};
         const desc = typeof p === "object" ? (p.description || "") : "";
         return `<div class="char-card">
+        <button class="char-edit" onclick="openCharEdit(window._packChars[${i}])">✎</button>
         <button class="char-delete" onclick="deleteCharacter('${c.id}')">✕</button>
-        ${c.image_url ? `<img class="char-card-img" src="${escHtml(c.image_url)}" alt="${escHtml(c.name)}" onerror="this.style.display='none'">` : `<div class="char-card-img-placeholder">👤</div>`}
+        ${c.image_url
+            ? `<img class="char-card-img" src="${escHtml(c.image_url)}" alt="${escHtml(c.name)}" onerror="this.style.display='none';this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<div class=\\"char-card-img-placeholder\\">👤</div>')">`
+            : `<div class="char-card-img-placeholder">👤</div>`}
         <div class="char-card-name">${escHtml(c.name)}</div>
         <div class="char-card-desc">${escHtml(desc.substring(0, 60))}${desc.length > 60 ? "..." : ""}</div>
       </div>`;

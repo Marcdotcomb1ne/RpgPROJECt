@@ -349,6 +349,59 @@ async def promote_npc_endpoint(slot_id: str, body: PromoteNPCRequest, user: dict
         raise HTTPException(status_code=400, detail=str(e))
 
 
+class PatchWorldStateRequest(BaseModel):
+    world_state_patch: dict
+
+
+@app.patch("/slots/{slot_id}/world-state", tags=["game"])
+async def patch_world_state(
+    slot_id: str,
+    body: PatchWorldStateRequest,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    """Aplica patch parcial no world_state. Usado para atributos iniciais do personagem."""
+    row = (await db.table("save_slots").select("world_state").eq("id", slot_id).eq("user_id", user["user_id"]).execute()).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Slot não encontrado")
+
+    ws = dict(row["world_state"])
+    allowed = {"sanity", "confidence", "violence", "social_status", "meta_awareness"}
+    for key, val in body.world_state_patch.items():
+        if key in allowed and isinstance(val, (int, float)):
+            ws[key] = int(val)
+
+    # Validate via schema
+    validated = WorldState(**ws)
+    await db.table("save_slots").update({
+        "world_state": validated.model_dump(),
+    }).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
+    return {"message": "World state atualizado", "world_state": validated.model_dump()}
+
+
+@app.patch("/slots/{slot_id}/world-state", tags=["game"])
+async def patch_world_state(
+    slot_id: str,
+    body: dict,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    """Aplica patch parcial no world_state (ex: atributos iniciais do personagem)."""
+    from fastapi import Body
+    row = (await db.table("save_slots").select("world_state").eq("id", slot_id).eq("user_id", user["user_id"]).execute()).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Slot não encontrado")
+    ws = dict(row["world_state"])
+    patch = body.get("world_state_patch", {})
+    allowed = {"sanity", "confidence", "violence", "social_status", "meta_awareness"}
+    for key, val in patch.items():
+        if key in allowed and isinstance(val, (int, float)):
+            ws[key] = int(val)
+    validated = WorldState(**ws)
+    await db.table("save_slots").update({"world_state": validated.model_dump()}).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
+    return {"world_state": validated.model_dump()}
+
+
 @app.get("/slots/{slot_id}/history", tags=["game"])
 async def slot_history(slot_id: str, limit: int = 50, user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
     try:
