@@ -1100,9 +1100,9 @@
       const playerName = document.getElementById("ps-name").value.trim() || "Protagonista";
       const playerDesc = document.getElementById("ps-desc").value.trim();
       const title = document.getElementById("ps-title").value.trim() || "Nova Historia";
-      const confidence = parseInt(document.getElementById("ps-confidence").value) || 50;
-      const violence = parseInt(document.getElementById("ps-violence").value) || 0;
-      const status = parseInt(document.getElementById("ps-status").value) || 0;
+      const confidence = clampNum("ps-confidence", 0, 100);
+      const violence = clampNum("ps-violence", 0, 100);
+      const status = clampNum("ps-status", -100, 100);
       clearMsg("player-msg");
       try {
         const body = {
@@ -1245,10 +1245,10 @@
       if (!name) return showMsg("pm-msg", "Nome do personagem é obrigatório.", "error");
       const personality_json = { description: document.getElementById("nc-personality").value.trim() };
       const base_traits_json = {
-        agressividade: parseInt(document.getElementById("nc-aggression").value) || 50,
-        lealdade: parseInt(document.getElementById("nc-loyalty").value) || 50,
-        confianca: parseInt(document.getElementById("nc-confidence").value) || 50,
-        influencia: parseInt(document.getElementById("nc-influence").value) || 50,
+        agressividade: clampNum("nc-aggression", 0, 100),
+        lealdade: clampNum("nc-loyalty", 0, 100),
+        confianca: clampNum("nc-confidence", 0, 100),
+        influencia: clampNum("nc-influence", 0, 100),
       };
       try {
         await api("POST", `/worlds/${editingWorldId}/characters`, {
@@ -1319,10 +1319,10 @@
         image_url: document.getElementById("edit-char-img").value.trim() || null,
         personality_json: { description: document.getElementById("edit-char-personality").value.trim() },
         base_traits_json: {
-          agressividade: parseInt(document.getElementById("edit-char-aggression").value) || 50,
-          lealdade: parseInt(document.getElementById("edit-char-loyalty").value) || 50,
-          confianca: parseInt(document.getElementById("edit-char-confidence").value) || 50,
-          influencia: parseInt(document.getElementById("edit-char-influence").value) || 50,
+          agressividade: clampNum("edit-char-aggression", 0, 100),
+          lealdade: clampNum("edit-char-loyalty", 0, 100),
+          confianca: clampNum("edit-char-confidence", 0, 100),
+          influencia: clampNum("edit-char-influence", 0, 100),
         },
       };
       try {
@@ -1336,41 +1336,126 @@
 
     function renderPackChars(chars) {
       const grid = document.getElementById("pm-chars-grid");
-      if (!chars.length) { grid.innerHTML = '<p style="grid-column:1/-1;font-size:11px;opacity:0.5;font-style:italic">Nenhum personagem ainda.</p>'; return; }
-      // Store chars data for edit modal access
+      grid.innerHTML = "";
+      if (!chars.length) {
+        grid.innerHTML = '<p style="grid-column:1/-1;font-size:11px;opacity:0.5;font-style:italic">Nenhum personagem ainda.</p>';
+        return;
+      }
       window._packChars = chars;
-      grid.innerHTML = chars.map((c, i) => {
-        const p = c.personality_json || {};
-        const desc = typeof p === "object" ? (p.description || "") : "";
-        return `<div class="char-card">
-        <button class="char-edit" onclick="openCharEdit(window._packChars[${i}])">✎</button>
-        <button class="char-delete" onclick="deleteCharacter('${c.id}')">✕</button>
-        ${c.image_url
-            ? `<img class="char-card-img" src="${escHtml(c.image_url)}" alt="${escHtml(c.name)}" onerror="this.style.display='none';this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<div class=\\"char-card-img-placeholder\\">👤</div>')">`
-            : `<div class="char-card-img-placeholder">👤</div>`}
-        <div class="char-card-name">${escHtml(c.name)}</div>
-        <div class="char-card-desc">${escHtml(desc.substring(0, 60))}${desc.length > 60 ? "..." : ""}</div>
-      </div>`;
-      }).join("");
+      chars.forEach((c, i) => {
+        const p = typeof c.personality_json === "object" ? c.personality_json : {};
+        const desc = p.description || p.descricao || "";
+        const card = document.createElement("div");
+        card.className = "char-card";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "char-edit";
+        editBtn.textContent = "editar";
+        editBtn.onclick = () => openCharEdit(window._packChars[i]);
+        card.appendChild(editBtn);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "char-delete";
+        delBtn.textContent = "x";
+        delBtn.onclick = () => deleteCharacter(c.id);
+        card.appendChild(delBtn);
+
+        if (c.image_url) {
+          const img = document.createElement("img");
+          img.className = "char-card-img";
+          img.alt = c.name;
+          img.src = c.image_url;
+          img.onerror = function () { this.replaceWith(makeImgPlaceholder()); };
+          card.appendChild(img);
+        } else {
+          card.appendChild(makeImgPlaceholder());
+        }
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "char-card-name";
+        nameEl.textContent = c.name;
+        card.appendChild(nameEl);
+
+        if (desc) {
+          const descEl = document.createElement("div");
+          descEl.className = "char-card-desc";
+          descEl.textContent = desc.length > 60 ? desc.substring(0, 60) + "..." : desc;
+          card.appendChild(descEl);
+        }
+        grid.appendChild(card);
+      });
+    }
+
+    function makeImgPlaceholder() {
+      const div = document.createElement("div");
+      div.className = "char-card-img-placeholder";
+      div.textContent = "sem imagem";
+      return div;
     }
 
     function renderPackBgs(bgs) {
       const list = document.getElementById("pm-bgs-list");
-      if (!bgs.length) { list.innerHTML = '<p style="font-size:11px;opacity:0.5;font-style:italic">Nenhum cenário ainda.</p>'; return; }
-      list.innerHTML = bgs.map(b => `
-      <div class="bg-item">
-        ${b.image_url ? `<img src="${escHtml(b.image_url)}" style="width:48px;height:32px;object-fit:cover;border:1px solid #ccc" alt="">` : `<div style="width:48px;height:32px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:16px">🖼</div>`}
-        <div style="flex:1">
-          <div class="bg-item-name">${escHtml(b.name)}</div>
-          <div class="bg-item-desc">${escHtml((b.description || "").substring(0, 50))}</div>
-        </div>
-        <button class="char-delete" style="position:static" onclick="deleteBackground('${b.id}')">✕</button>
-      </div>`).join("");
+      list.innerHTML = "";
+      if (!bgs.length) {
+        list.innerHTML = '<p style="font-size:11px;opacity:0.5;font-style:italic">Nenhum cenario ainda.</p>';
+        return;
+      }
+      bgs.forEach(b => {
+        const item = document.createElement("div");
+        item.className = "bg-item";
+
+        if (b.image_url) {
+          const img = document.createElement("img");
+          img.src = b.image_url;
+          img.style.cssText = "width:48px;height:32px;object-fit:cover;border:1px solid #ccc;flex-shrink:0";
+          img.onerror = function () { this.replaceWith(makeBgThumb()); };
+          item.appendChild(img);
+        } else {
+          item.appendChild(makeBgThumb());
+        }
+
+        const info = document.createElement("div");
+        info.style.flex = "1";
+        const nameEl = document.createElement("div");
+        nameEl.className = "bg-item-name";
+        nameEl.textContent = b.name;
+        const descEl = document.createElement("div");
+        descEl.className = "bg-item-desc";
+        descEl.textContent = (b.description || "").substring(0, 50);
+        info.appendChild(nameEl);
+        info.appendChild(descEl);
+        item.appendChild(info);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "char-delete";
+        delBtn.style.position = "static";
+        delBtn.textContent = "x";
+        delBtn.onclick = () => deleteBackground(b.id);
+        item.appendChild(delBtn);
+
+        list.appendChild(item);
+      });
+    }
+
+    function makeBgThumb() {
+      const div = document.createElement("div");
+      div.style.cssText = "width:48px;height:32px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;flex-shrink:0";
+      div.textContent = "img";
+      return div;
     }
 
     // ============================================================
     // Utilities
     // ============================================================
+    function clampNum(id, min, max) {
+      const el = document.getElementById(id);
+      if (!el) return parseInt(el?.value) || min;
+      let v = parseInt(el.value);
+      if (isNaN(v)) v = min;
+      v = Math.min(max, Math.max(min, v));
+      el.value = v;
+      return v;
+    }
     function showMsg(id, text, type) { const el = document.getElementById(id); if (!el) return; el.textContent = text; el.className = "msg msg-" + type; el.style.display = "block"; }
     function clearMsg(id) { const el = document.getElementById(id); if (el) { el.style.display = "none"; el.textContent = ""; } }
     function setBtnLoading(id, loading) {
