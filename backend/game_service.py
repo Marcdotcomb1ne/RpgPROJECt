@@ -252,12 +252,9 @@ async def process_action(
     # 3. Carrega contexto do Pack
     pack, characters, backgrounds = await _get_pack_context(db, pack_id)
 
-    # 4. Avança fase
-    # FIX: last_time_skip é preservado do advance_phase anterior,
-    # e será enviado para a IA como contexto. Após a IA processar, limpamos.
-    world_state = world_state.next_phase()
-
-    # 5. Eventos recentes — inclui eventos de sistema (time skips)
+    # 4. Eventos recentes — inclui eventos de sistema (time skips)
+    # Nota: last_time_skip já está no world_state se o jogador chamou advance_phase antes.
+    # A IA vai perceber isso no prompt e narrar as consequências. Após processar, limpamos.
     recent_result = await (
         db.table("events_log")
         .select("type, content, created_at")
