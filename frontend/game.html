@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/frontend/assets/icon.ico">
   <title>Status Zero — Jogo</title>
   <style>
     *,
@@ -17,7 +18,7 @@
     :root {
       --black: #0a0a0a;
       --white: #f5f0e8;
-      --red: #c1121f;
+      --red: #d4d4d4;
       --ink: #1a1a2e;
       --panel: #ece8df;
       --border: 2px solid #0a0a0a;
@@ -1587,15 +1588,36 @@
     async function loadHistory() {
       try {
         const events = await api("GET", `/slots/${slotId}/history?limit=80`);
-        allEvents = events;
+        // Normaliza eventos: character_speech vem com "speaker||content" do banco
+        allEvents = events.map(ev => {
+          if (ev.type === "character_speech" && ev.content && ev.content.includes("||")) {
+            const idx = ev.content.indexOf("||");
+            return {
+              ...ev,
+              speaker: ev.content.substring(0, idx),
+              content: ev.content.substring(idx + 2),
+            };
+          }
+          return ev;
+        });
         renderLogContent();
-        const narrations = events.filter(e => e.type === "narration");
+        const narrations = allEvents.filter(e => e.type === "narration");
+        const speeches = allEvents.filter(e => e.type === "character_speech");
         const hasOpening = !!sessionStorage.getItem("opening_narration");
-        if (narrations.length && !hasOpening) {
-          const last = narrations[narrations.length - 1];
-          setNarration("NARRADOR", last.content, false);
-        } else if (!narrations.length && !hasOpening) {
-          setNarration("NARRADOR", "A história começa aqui. O que você faz?", false);
+        if (!hasOpening) {
+          // Mostra o último evento relevante na dialog box
+          const lastSpeech = speeches[speeches.length - 1];
+          const lastNarration = narrations[narrations.length - 1];
+          // Pega o mais recente entre narração e diálogo
+          const lastNarIdx = lastNarration ? allEvents.lastIndexOf(allEvents.find(e => e === lastNarration)) : -1;
+          const lastSpIdx = lastSpeech ? allEvents.lastIndexOf(allEvents.find(e => e === lastSpeech)) : -1;
+          if (lastSpeech && lastSpIdx > lastNarIdx) {
+            setNarration(lastSpeech.speaker || "???", lastSpeech.content, true);
+          } else if (lastNarration) {
+            setNarration("NARRADOR", lastNarration.content, false);
+          } else {
+            setNarration("NARRADOR", "A história começa aqui. O que você faz?", false);
+          }
         }
       } catch (_) { }
     }
@@ -1649,14 +1671,22 @@
       document.getElementById("advance-btn").disabled = true;
       try {
         const result = await api("POST", `/slots/${slotId}/advance`);
-        applyResult(result);
-        addEventToLog({ type: "system", content: result.narration });
+        // BUG FIX: applyResult já chama setNarration.
+        // Adicionamos ao log: primeiro o separador de fase (system), depois a narração do skip.
+        const ws = result.world_state || {};
+        const phaseLabel = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
+        const sysLabel = `[${(phaseLabel[result.current_phase] || result.current_phase).toUpperCase()} — DIA ${result.current_day}]`;
+        addEventToLog({ type: "system", content: sysLabel });
+        if (result.narration) {
+          addEventToLog({ type: "narration", content: result.narration });
+        }
+        applyResult(result, true); // skipLog=true: log já adicionado acima
       } catch (err) {
         if (err.message !== "Sessao expirada") setNarration("SISTEMA", err.message, false);
       } finally { document.getElementById("advance-btn").disabled = false; }
     }
 
-    function applyResult(result) {
+    function applyResult(result, skipLog = false) {
       document.getElementById("vn-text").classList.remove("typing");
 
       const sceneType = result.scene_type || "narrative";
@@ -1684,30 +1714,24 @@
         const activeChar = result.active_characters[0];
         const charName = activeChar.name || activeChar;
 
-        // Renderiza sprite
         renderCharacters(result.active_characters, ws.emergent_npcs || {});
 
-        // FIX: usa character_dialogue se disponível (backend separado)
-        // Se tiver dialogue, mostra narração primeiro (se houver) depois diálogo como speaker
         if (result.character_dialogue) {
-          // Mostra o diálogo direto com o personagem como speaker
           setNarration(charName, result.character_dialogue, true);
-          // Loga narração de fundo (se houver) + diálogo separados
-          if (result.narration) {
-            addEventToLog({ type: "narration", content: result.narration });
+          if (!skipLog) {
+            if (result.narration) addEventToLog({ type: "narration", content: result.narration });
+            addEventToLog({ type: "character_speech", content: result.character_dialogue, speaker: charName });
           }
-          addEventToLog({ type: "character_speech", content: result.character_dialogue, speaker: charName });
         } else {
-          // Fallback: sem dialogue separado, usa narration com speaker do personagem
           setNarration(charName, result.narration, true);
-          addEventToLog({ type: "character_speech", content: result.narration, speaker: charName });
+          if (!skipLog) addEventToLog({ type: "character_speech", content: result.narration, speaker: charName });
         }
       } else {
         bg.classList.add("narrative-only");
         chars.classList.add("hidden");
         chars.innerHTML = "";
         setNarration("NARRADOR", result.narration, false);
-        addEventToLog({ type: "narration", content: result.narration });
+        if (!skipLog) addEventToLog({ type: "narration", content: result.narration });
       }
     }
 

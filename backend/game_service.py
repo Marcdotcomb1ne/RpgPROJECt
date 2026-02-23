@@ -328,11 +328,37 @@ async def process_action(
         "type":    "player_action",
         "content": raw_input,
     }).execute()
-    await db.table("events_log").insert({
-        "save_id": save_id,
-        "type":    "narration",
-        "content": ai_response.narration,
-    }).execute()
+
+    # Se tem diálogo separado do personagem, salva narração + diálogo como eventos distintos
+    speaker = ai_response.active_characters[0] if ai_response.active_characters else None
+
+    if ai_response.character_dialogue and ai_response.scene_type == "character_focus" and speaker:
+        # Narração de contexto (ambiente, ações)
+        if ai_response.narration:
+            await db.table("events_log").insert({
+                "save_id": save_id,
+                "type":    "narration",
+                "content": ai_response.narration,
+            }).execute()
+        # Diálogo direto com speaker embutido no content usando prefixo
+        await db.table("events_log").insert({
+            "save_id": save_id,
+            "type":    "character_speech",
+            "content": f"{speaker}||{ai_response.character_dialogue}",
+        }).execute()
+    elif ai_response.scene_type == "character_focus" and speaker:
+        # IA não separou o diálogo (modelo fraco ou falhou) — trata narration como fala do personagem
+        await db.table("events_log").insert({
+            "save_id": save_id,
+            "type":    "character_speech",
+            "content": f"{speaker}||{ai_response.narration}",
+        }).execute()
+    else:
+        await db.table("events_log").insert({
+            "save_id": save_id,
+            "type":    "narration",
+            "content": ai_response.narration,
+        }).execute()
 
     # 14. Análise de arcos
     if world_state.event_counter_arc % ARC_CHECK_EVERY == 0:
