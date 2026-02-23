@@ -17,6 +17,7 @@
 
     :root {
       --black: #0a0a0a;
+      --blue: #2f465c;
       --white: #f5f0e8;
       --red: #d4d4d4;
       --ink: #1a1a2e;
@@ -559,11 +560,11 @@
     }
 
     .log-panels-wrap {
+      min-height: 0;
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
       padding: 12px 10px 20px;
-      display: flex;
       flex-direction: column;
       background:
         radial-gradient(circle, #ffffff04 1px, transparent 1px),
@@ -617,6 +618,8 @@
       background: #0f0f1e;
       padding: 9px 13px;
       overflow: hidden;
+      height: auto;
+      overflow: visible;
     }
 
     .panel-narration::before {
@@ -657,6 +660,9 @@
       position: relative;
       z-index: 1;
       white-space: pre-wrap;
+      overflow: visible;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
     /* --- 2. CHARACTER SPEECH --- */
@@ -747,6 +753,9 @@
       max-width: 82%;
       position: relative;
       box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.7);
+      height: auto;
+      overflow: visible;
+      word-wrap: break-word;
     }
 
     .player-box::before {
@@ -774,6 +783,8 @@
       line-height: 1.5;
       color: var(--black);
       white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow: visible;
     }
 
     .player-text .player-dialogue {
@@ -1540,7 +1551,7 @@
         document.getElementById("slot-title").textContent = slot.title || "—";
         const ws = slot.world_state || {};
         updateStats(ws);
-        updateTime(ws.current_day || 1, ws.current_phase || "morning");
+        updateTime(ws.current_day || 1, ws.current_phase || "morning", ws.current_background);
         updateRelationships(ws.relationships || {});
 
         // FIX: carrega imagens customizadas de NPCs (salvas em emergent_npcs[name].custom_image_url)
@@ -1693,7 +1704,7 @@
       const ws = result.world_state || {};
 
       updateStats(ws);
-      updateTime(result.current_day, result.current_phase);
+      updateTime(result.current_day, result.current_phase, ws.current_background);
       updateRelationships(ws.relationships || {});
       updateNPCs(ws.emergent_npcs || {});
       if (ws.memory_summary) {
@@ -1845,9 +1856,14 @@
       if (val && key !== "social") val.textContent = value || 0;
     }
 
-    function updateTime(day, phase) {
+    function updateTime(day, phase, backgroundName) {
       document.getElementById("time-display").textContent = `Dia ${day} — ${PHASES[phase] || phase}`;
-      document.getElementById("phase-tag").textContent = PHASES[phase] || phase;
+      const phaseTag = document.getElementById("phase-tag");
+      if (backgroundName) {
+        phaseTag.innerHTML = `${PHASES[phase] || phase}<br><span style="font-size:8px;opacity:0.5;letter-spacing:1px">${backgroundName}</span>`;
+      } else {
+        phaseTag.textContent = PHASES[phase] || phase;
+      }
     }
 
     function updateRelationships(rels) {

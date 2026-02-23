@@ -118,7 +118,7 @@ class PlayerAction(BaseModel):
 class CreateWorldRequest(BaseModel):
     title: str = Field(..., max_length=100)
     world_concept: str = Field(..., min_length=20, max_length=2000)
-    tone: str = Field(default="dramatico", max_length=100)
+    tone: str = Field(default="dramatico", max_length=400)
     rules_of_world: str = Field(default="", max_length=1000)
     logo_url: Optional[str] = Field(default=None)
     is_public: bool = Field(default=False)
