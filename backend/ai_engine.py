@@ -41,11 +41,15 @@ async def _call_claude(system_prompt: str, user_content: str, max_tokens: int = 
 
 def _extract_json(text: str) -> dict:
     text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+        text = text.strip()
     try:
         return json.loads(text)
     except json.JSONDecodeError:
         pass
-    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL | re.IGNORECASE)
     if match:
         try:
             return json.loads(match.group(1))

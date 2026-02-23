@@ -25,7 +25,7 @@ from ai_engine import (
 )
 
 SUMMARIZE_EVERY = 10
-ARC_CHECK_EVERY = 3
+ARC_CHECK_EVERY = 7
 
 
 async def _get_slot(db: SupabaseClient, save_id: str, user_id: str) -> dict:
@@ -372,12 +372,15 @@ async def process_action(
 
     # 15. Sumarização periódica
     if world_state.event_counter_global % SUMMARIZE_EVERY == 0:
-        all_recent = list(reversed((await (
-            db.table("events_log").select("type, content")
-            .eq("save_id", save_id).order("created_at", desc=True)
-            .limit(SUMMARIZE_EVERY * 2).execute()
-        ).as_list()))
+        recent_result = await (
+            db.table("events_log")
+            .select("type, content")
+            .eq("save_id", save_id)
+            .order("created_at", desc=True)
+            .limit(SUMMARIZE_EVERY * 2)
+            .execute()
         )
+        all_recent = list(reversed(recent_result.as_list()))
         memory_summary = await call_summarizer(memory_summary, all_recent)
 
     # 16. Persiste slot
