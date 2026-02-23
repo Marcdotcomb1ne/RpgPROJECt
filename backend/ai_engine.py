@@ -3,6 +3,11 @@ AI Engine — Claude API (Anthropic)
 -----------------------------------
 Narrador principal, analista de arcos, sumarizador.
 Suporta: dois tipos de cena, NPCs emergentes, personagem do jogador.
+
+FIXES:
+- Narração e diálogo separados: narration (voz onisciente) + character_dialogue (fala direta)
+- Cena de abertura retorna JSON com background_hint
+- advance_phase gera narração contextual com IA (a IA percebe o tempo passando)
 """
 
 import httpx
@@ -70,14 +75,12 @@ def _build_narrator_system(
         tone = pack.get("tone", tone)
         rules = pack.get("rules_of_world", "")
 
-    # Personagem do jogador
     player_name = "Protagonista"
     player_desc = ""
     if player_info:
         player_name = player_info.get("name", "Protagonista")
         player_desc = player_info.get("description", "")
 
-    # Relacionamentos com personagens do Pack
     rel_lines = []
     for name, data in (world_state.relationships or {}).items():
         if isinstance(data, dict):
@@ -88,7 +91,6 @@ def _build_narrator_system(
             rel_lines.append(f"  - {name}: {data}")
     rel_text = "\n".join(rel_lines) if rel_lines else "  Nenhum relacionamento ainda."
 
-    # NPCs emergentes existentes
     npc_lines = []
     for name, data in (world_state.emergent_npcs or {}).items():
         if isinstance(data, dict):
@@ -98,7 +100,6 @@ def _build_narrator_system(
             npc_lines.append(f"  - {name}: {desc} | {status} (afinidade {aff:+d})")
     npc_text = "\n".join(npc_lines) if npc_lines else "  Nenhum NPC emergente ainda."
 
-    # Personagens do Pack disponíveis
     char_lines = []
     for c in characters:
         p = c.get("personality_json") or {}
@@ -109,9 +110,13 @@ def _build_narrator_system(
         char_lines.append(f"  - {c['name']}: {desc}")
     char_text = "\n".join(char_lines) if char_lines else "  Nenhum personagem definido no Pack."
 
-    # Backgrounds disponíveis
     bg_names = [b["name"] for b in backgrounds] if backgrounds else []
     bg_text = ", ".join(bg_names) if bg_names else "Nenhum background definido"
+
+    # FIX: campo last_time_skip para contexto de passagem de tempo
+    time_skip_note = ""
+    if world_state.last_time_skip:
+        time_skip_note = f"\n⚠️ PASSAGEM DE TEMPO: {world_state.last_time_skip}\nO jogador avançou o tempo. A cena anterior foi interrompida. Narre as consequências dessa passagem — o que mudou, onde as pessoas estão agora, qual o estado do ambiente."
 
     return f"""Você é o narrador de um RPG estilo Visual Novel / Manhwa. Você controla 100% da narrativa.
 
@@ -126,9 +131,9 @@ def _build_narrator_system(
 
 === PERSONAGEM DO JOGADOR ===
 Nome: {player_name}
-{("Descrição: " + player_desc) if player_desc else "O protagonista é o ponto de vista do jogador — não aparece como imagem na tela."}
-Stats atuais: Sanidade {world_state.sanity} | Confiança {world_state.confidence} | Violência {world_state.violence} | Status Social {world_state.social_status} | Meta-consciência {world_state.meta_awareness}
-Dia {world_state.current_day} — {world_state.current_phase}
+{("Descrição: " + player_desc) if player_desc else "O protagonista é o ponto de vista do jogador."}
+Stats: Sanidade {world_state.sanity} | Confiança {world_state.confidence} | Violência {world_state.violence} | Status {world_state.social_status} | Meta {world_state.meta_awareness}
+Dia {world_state.current_day} — {world_state.current_phase}{time_skip_note}
 
 === PERSONAGENS DO PACK (persistentes, têm imagem) ===
 {char_text}
@@ -143,23 +148,32 @@ Dia {world_state.current_day} — {world_state.current_phase}
 {bg_text}
 
 === TIPOS DE CENA ===
-Você decide o tipo de cena com base no contexto:
-- "narrative": apenas texto + background. Use para: ambiente, introspecção, transições, momentos sem personagem focado.
-- "character_focus": um personagem aparece na tela + texto. Use para: confrontos diretos, conversas importantes, momentos emocionais.
+- "narrative": apenas texto + background. Introspecção, transições, ambiente, sem personagem focado.
+- "character_focus": um personagem em tela + texto. Confrontos, conversas importantes, momentos emocionais.
 
-Nunca force personagem em cena quando não fizer sentido narrativo.
+=== SEPARAÇÃO NARRAÇÃO / DIÁLOGO ===
+IMPORTANTE: Você deve SEPARAR a voz do narrador do diálogo direto do personagem em cena.
+
+- "narration": 1-3 parágrafos da VOZ DO NARRADOR. Descrição de ambiente, ações, atmosfera, consequências. 
+  NÃO inclua aqui o que o personagem fala diretamente. Use terceira pessoa ou segunda pessoa (você).
+  Exemplo: "O corredor fica em silêncio quando Ronaldinho se aproxima. Ele para a dois metros de você."
+
+- "character_dialogue": A FALA DIRETA do personagem em cena (apenas se scene_type=character_focus).
+  Escreva exatamente o que ele diz, sem aspas, sem 'disse ele', sem atribuição.
+  Exemplo: "Você tem coragem de aparecer aqui depois do que fez."
+  Se scene_type=narrative, deixe character_dialogue como null.
 
 === NPCs EMERGENTES ===
-Você pode criar personagens secundários/figurantes/antagonistas espontâneos. Eles NÃO têm imagem (use null).
-Se um NPC emergente aparecer, inclua-o em "emergent_npcs" com nome, descrição, personalidade e atributos iniciais.
-Personagens do Pack têm precedência sobre emergentes quando fazem sentido na cena.
+Você pode criar personagens secundários espontâneos. Eles NÃO têm imagem (use null).
+Personagens do Pack têm precedência.
 
 === FORMATO DE RESPOSTA ===
 Responda SEMPRE em JSON válido:
 {{
-  "narration": "Texto narrativo rico em português. 2-4 parágrafos. Inclui diálogos de NPCs, descrições sensoriais, consequências. Seja dramático e coerente com o tom.",
+  "narration": "Texto do narrador. 1-3 parágrafos. Ambiente, ações, atmosfera. Português.",
+  "character_dialogue": "Fala direta do personagem em tela, ou null se narrative",
   "scene_type": "narrative|character_focus",
-  "active_characters": ["Nome do personagem em cena (apenas 1, só se scene_type=character_focus, deve ser nome exato do Pack ou NPC emergente)"],
+  "active_characters": ["Nome exato do personagem (máx 1, só se character_focus)"],
   "background_hint": "nome exato do background ou null",
   "world_state_deltas": {{
     "sanity": <0-100, omitir se não mudar>,
@@ -169,12 +183,12 @@ Responda SEMPRE em JSON válido:
     "meta_awareness": <0-100, omitir se não mudar>
   }},
   "relationship_updates": {{
-    "<nome_exato_do_personagem_do_pack>": {{"affinity": <-100 a 100>, "status": "amigo|rival|neutro|aliado|inimigo"}}
+    "<nome_exato>": {{"affinity": <-100 a 100>, "status": "amigo|rival|neutro|aliado|inimigo"}}
   }},
   "emergent_npcs": {{
-    "<nome_do_npc>": {{
-      "description": "descrição física e contextual",
-      "personality": "personalidade em 1-2 frases",
+    "<nome>": {{
+      "description": "descrição",
+      "personality": "personalidade",
       "status": "neutro|rival|aliado|antagonista",
       "affinity": <-100 a 100>,
       "traits": {{"agressividade": 0-100, "lealdade": 0-100}}
@@ -183,7 +197,7 @@ Responda SEMPRE em JSON válido:
   "arc_signal": "start|close|none"
 }}
 
-Nunca quebre o personagem. Nunca mencione que você é IA. Nunca repita a mesma cena duas vezes."""
+Nunca quebre o personagem. Nunca mencione que você é IA."""
 
 
 def _build_opening_system(pack: dict | None, player_info: dict | None) -> str:
@@ -198,8 +212,8 @@ def _build_opening_system(pack: dict | None, player_info: dict | None) -> str:
     player_name = player_info.get("name", "Protagonista") if player_info else "Protagonista"
     player_desc = player_info.get("description", "") if player_info else ""
 
-    return f"""Você é o narrador de um RPG Visual Novel estilo manhwa. 
-Escreva a cena de abertura da história — o momento em que o jogador entra no universo pela primeira vez.
+    return f"""Você é o narrador de um RPG Visual Novel estilo manhwa.
+Escreva a cena de abertura — o momento em que o jogador entra no universo pela primeira vez.
 
 Universo: {world_concept or "Escola pública brasileira, gangues, status social."}
 Tom: {tone}
@@ -208,11 +222,43 @@ Personagem do jogador: {player_name}{"— " + player_desc if player_desc else ""
 
 A cena de abertura deve:
 - Estabelecer o ambiente e o tom imediatamente
-- Apresentar um detalhe provocativo que gera curiosidade
-- Ter 2-3 parágrafos
-- Terminar com o jogador em uma situação que pede uma ação
+- Ter 2-3 parágrafos de narração
+- Terminar com o jogador em situação que pede uma ação
 
-Responda APENAS com o texto narrativo (sem JSON, sem formatação extra). Em português."""
+RESPONDA EM JSON VÁLIDO:
+{{
+  "narration": "Texto da cena de abertura. 2-3 parágrafos. Português.",
+  "background_hint": "nome do background mais adequado para a cena de abertura, ou null",
+  "scene_type": "narrative"
+}}"""
+
+
+def _build_time_skip_system(pack: dict | None) -> str:
+    """Sistema para narrar passagem de tempo quando o jogador avança a fase."""
+    world_concept = ""
+    tone = "dramatico"
+    if pack:
+        world_concept = pack.get("world_concept", "")
+        tone = pack.get("tone", tone)
+
+    return f"""Você é o narrador de um RPG Visual Novel estilo manhwa.
+O jogador avançou o tempo sem agir — pulou para a próxima fase do dia.
+
+Universo: {world_concept or "Escola pública brasileira, gangues, status social."}
+Tom: {tone}
+
+Escreva uma narração CURTA (1-2 parágrafos) que:
+- Descreve a passagem do tempo de forma atmosférica
+- Mostra o que mudou no ambiente entre uma fase e outra
+- Cria senso de continuidade — o mundo continuou sem o jogador agir
+- Pode mencionar brevemente o que outros personagens estão fazendo enquanto isso
+- NÃO inicia novos conflitos — é uma transição, não uma cena ativa
+
+RESPONDA EM JSON VÁLIDO:
+{{
+  "narration": "Narração da passagem de tempo. 1-2 parágrafos. Português.",
+  "background_hint": "nome do background adequado para o momento do dia, ou null"
+}}"""
 
 
 def _build_arc_system() -> str:
@@ -241,22 +287,94 @@ async def call_opening_narration(
     pack: dict | None,
     player_info: dict | None,
     backgrounds: list[dict],
-) -> str:
-    """Gera a narração de abertura quando um save é criado."""
+) -> dict:
+    """
+    FIX: Retorna dict com narration + background_hint (não mais string pura).
+    """
     settings = get_settings()
     if not settings.ai_engine_enabled:
         name = player_info.get("name", "Protagonista") if player_info else "Protagonista"
-        return (
-            f"[PLACEHOLDER — ative AI_ENGINE_ENABLED=true para narração real]\n\n"
-            f"A história de {name} começa aqui. O mundo espera sua primeira ação."
-        )
+        return {
+            "narration": (
+                f"[PLACEHOLDER — ative AI_ENGINE_ENABLED=true para narração real]\n\n"
+                f"A história de {name} começa aqui. O mundo espera sua primeira ação."
+            ),
+            "background_hint": backgrounds[0]["name"] if backgrounds else None,
+        }
 
     bg_hint = ""
     if backgrounds:
         bg_hint = f"\nBackgrounds disponíveis: {', '.join(b['name'] for b in backgrounds)}"
 
     system = _build_opening_system(pack, player_info)
-    return await _call_claude(system, f"Escreva a cena de abertura.{bg_hint}", max_tokens=600)
+    raw  = await _call_claude(system, f"Escreva a cena de abertura.{bg_hint}", max_tokens=700)
+    data = _extract_json(raw)
+
+    return {
+        "narration": data.get("narration", raw),
+        "background_hint": data.get("background_hint"),
+    }
+
+
+async def call_time_skip_narration(
+    world_state: WorldState,
+    pack: dict | None,
+    recent_events: list[dict],
+    backgrounds: list[dict],
+) -> dict:
+    """
+    FIX: Gera narração contextual de passagem de tempo.
+    A IA recebe o histórico recente + fase atual e narra o que aconteceu
+    durante o tempo que passou — personagens se dispersaram, ambiente mudou, etc.
+    """
+    settings = get_settings()
+
+    phase_labels = {"morning": "manhã", "afternoon": "tarde", "night": "noite"}
+    phase_label = phase_labels.get(world_state.current_phase, world_state.current_phase)
+
+    if not settings.ai_engine_enabled:
+        msgs = {
+            "morning":   f"Dia {world_state.current_day}. A manhã chega fria.",
+            "afternoon": "A tarde se instala. O movimento muda de ritmo.",
+            "night":     "A noite cobre tudo. O silêncio pesa.",
+        }
+        return {
+            "narration": msgs.get(world_state.current_phase, "O tempo passa."),
+            "background_hint": None,
+        }
+
+    # Constrói contexto do que aconteceu antes
+    history_lines = []
+    for ev in (recent_events or [])[-10:]:
+        t = ev.get("type", "")
+        c = ev.get("content", "")
+        if t == "player_action":
+            history_lines.append(f"[JOGADOR]: {c}")
+        elif t == "narration":
+            history_lines.append(f"[NARRADOR]: {c[:200]}")
+        elif t == "system":
+            history_lines.append(f"[SISTEMA]: {c}")
+
+    bg_names = [b["name"] for b in backgrounds] if backgrounds else []
+
+    user_content = f"""Agora é {phase_label}, Dia {world_state.current_day}.
+O jogador pulou para esta fase sem agir.
+
+Contexto recente:
+{chr(10).join(history_lines) or "Início da história."}
+
+Backgrounds disponíveis: {', '.join(bg_names) if bg_names else 'nenhum'}
+
+Narre a passagem de tempo."""
+
+    system = _build_time_skip_system(pack)
+    raw  = await _call_claude(system, user_content, max_tokens=400)
+    data = _extract_json(raw)
+
+    return {
+        "narration": data.get("narration", f"O tempo avança. Agora é {phase_label}."),
+        "background_hint": data.get("background_hint"),
+    }
 
 
 async def call_narrator(
@@ -273,9 +391,9 @@ async def call_narrator(
 
     if not settings.ai_engine_enabled:
         phase_flavor = {
-            "morning": "A escola ainda está vazia.",
+            "morning":   "A escola ainda está vazia.",
             "afternoon": "O corredor ferve de barulho.",
-            "night": "As luzes piscam. Você está quase sozinho.",
+            "night":     "As luzes piscam. Você está quase sozinho.",
         }
         return AIResponse(
             narration=(
@@ -292,7 +410,6 @@ async def call_narrator(
         characters or [], backgrounds or []
     )
 
-    # Histórico recente
     history_lines = []
     for ev in (recent_events or [])[-15:]:
         t = ev.get("type", "")
@@ -303,6 +420,8 @@ async def call_narrator(
             history_lines.append(f"[NARRADOR]: {c[:300]}")
         elif t == "arc_event":
             history_lines.append(f"[ARCO]: {c}")
+        elif t == "system":
+            history_lines.append(f"[SISTEMA]: {c}")
 
     user_content = f"""=== MEMÓRIA ===
 {memory_summary or "Início da história."}
@@ -311,17 +430,18 @@ async def call_narrator(
 {chr(10).join(history_lines) or "Nenhum evento anterior."}
 
 === AÇÃO DO JOGADOR ===
-Input completo: {action.raw_input}
+Input: {action.raw_input}
 Diálogos: {action.dialogues}
 Ações: {action.actions}
 
-Narre o que acontece a seguir. Lembre-se de decidir o tipo de cena."""
+Narre o que acontece. Lembre de separar narration do character_dialogue."""
 
-    raw = await _call_claude(system, user_content, max_tokens=1400)
+    raw  = await _call_claude(system, user_content, max_tokens=1400)
     data = _extract_json(raw)
 
     return AIResponse(
         narration=data.get("narration", raw),
+        character_dialogue=data.get("character_dialogue"),
         scene_type=data.get("scene_type", "narrative"),
         active_characters=data.get("active_characters", []),
         background_hint=data.get("background_hint"),
@@ -349,7 +469,7 @@ Arco ativo: {active_arc['title'] if active_arc else 'Nenhum'} | Eventos neste ar
 Eventos recentes:
 {chr(10).join(lines)}"""
 
-    raw = await _call_claude(_build_arc_system(), user_content, max_tokens=300)
+    raw  = await _call_claude(_build_arc_system(), user_content, max_tokens=300)
     data = _extract_json(raw)
 
     return AIResponse(

@@ -739,7 +739,7 @@
     #loading-blur-bg {
       position: absolute;
       inset: 0;
-      background: rgba(10, 10, 10, 0.85);
+      background: rgba(10, 10, 10, 0.1);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
@@ -1128,7 +1128,7 @@
     async function loadSlots() {
       clearMsg("slots-msg");
       const c = document.getElementById("slots-list");
-      c.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
+      c.innerHTML = '<img src="/frontend/assets/girl.gif" alt="Anime cute girl" style="width:100px;height:100px;object-fit:contain;vertical-align:middle;margin-right:8px"><p style="opacity:0.5;font-style:italic">Carregando...</p>';
       try {
         const slots = await api("GET", "/slots");
         renderSlots(slots);
@@ -1178,7 +1178,7 @@
       clearMsg("packs-msg");
       showScreen("screen-pack-select");
       const grid = document.getElementById("packs-grid");
-      grid.innerHTML = '<p style="opacity:0.5;grid-column:1/-1">Carregando packs...</p>';
+      grid.innerHTML = '<img src="/frontend/assets/girl.gif" alt="Anime cute girl" style="width:100px;height:100px;object-fit:contain;vertical-align:middle;margin-right:8px"><p style="opacity:0.5;grid-column:1/-1">Carregando packs...</p>';
       try { availablePacks = await api("GET", "/worlds"); renderPackGrid(); }
       catch (err) { grid.innerHTML = ''; showMsg("packs-msg", err.message, "error"); }
     }
@@ -1243,6 +1243,7 @@
           sessionStorage.setItem("slot_id", res.slot_id);
           sessionStorage.setItem("auth_token", authToken);
           sessionStorage.setItem("opening_narration", res.opening);
+          if (res.background_url) sessionStorage.setItem('opening_bg_url', res.background_url);
           window.location.href = "game.html";
         }
       } catch (err) { showMsg("player-msg", err.message, "error"); }
@@ -1254,7 +1255,7 @@
     async function loadWorlds() {
       clearMsg("worlds-msg");
       const c = document.getElementById("worlds-list");
-      c.innerHTML = '<p style="opacity:0.5;font-style:italic">Carregando...</p>';
+      c.innerHTML = '<img src="/frontend/assets/girl.gif" alt="Anime cute girl" style="width:100px;height:100px;object-fit:contain;vertical-align:middle;margin-right:8px"><p style="opacity:0.5;font-style:italic">Carregando...</p>';
       try {
         const worlds = await api("GET", "/worlds");
         renderWorlds(worlds);

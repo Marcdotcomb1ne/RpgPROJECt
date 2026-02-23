@@ -1,6 +1,11 @@
 """
-RPG Manhwa — FastAPI Backend v0.3
+RPG Manhwa — FastAPI Backend v0.3.2
 Endpoints: Auth, Slots, Game Actions, Roleplay Packs, NPCs Emergentes
+
+FIXES:
+- Novo endpoint POST /slots/{slot_id}/npc-image para salvar imagem de NPC sem promover
+- initialize_save retorna background_url (abertura com background correto)
+- advance_phase retorna narração contextual da IA
 """
 
 from fastapi import FastAPI, Depends, HTTPException, status
@@ -14,14 +19,14 @@ from auth import get_current_user
 from schemas import (
     CreateSlotRequest, UpdateSlotTitleRequest, WorldState,
     CreateWorldRequest, CreateCharacterRequest, UpdateCharacterRequest,
-    CreateBackgroundRequest, PromoteNPCRequest,
+    CreateBackgroundRequest, PromoteNPCRequest, NpcImageRequest,
 )
 from game_service import (
     process_action, get_slot_history, get_slot_arcs,
-    advance_phase, initialize_save, promote_npc,
+    advance_phase, initialize_save, promote_npc, set_npc_image,
 )
 
-app = FastAPI(title="RPG Manhwa API", version="0.3.1")
+app = FastAPI(title="RPG Manhwa API", version="0.3.2")
 
 ALLOWED_ORIGINS = [
     "http://localhost", "http://localhost:3000",
@@ -45,8 +50,8 @@ app.add_middleware(
 def health():
     s = get_settings()
     return {
-        "status": "ok",
-        "ai_enabled": s.ai_engine_enabled,
+        "status":               "ok",
+        "ai_enabled":           s.ai_engine_enabled,
         "anthropic_configured": bool(s.anthropic_api_key),
     }
 
@@ -70,7 +75,7 @@ async def get_profile(user: dict = Depends(get_current_user), db: SupabaseClient
 @app.get("/worlds", tags=["worlds"])
 async def list_worlds(user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
     public = (await db.table("roleplay_worlds").select("id, owner_id, title, world_concept, tone, logo_url, is_public").eq("is_public", "true").execute()).as_list()
-    own = (await db.table("roleplay_worlds").select("id, owner_id, title, world_concept, tone, logo_url, is_public").eq("owner_id", user["user_id"]).execute()).as_list()
+    own    = (await db.table("roleplay_worlds").select("id, owner_id, title, world_concept, tone, logo_url, is_public").eq("owner_id", user["user_id"]).execute()).as_list()
     seen, result = set(), []
     for row in public + own:
         if row["id"] not in seen:
@@ -87,20 +92,20 @@ async def get_world(world_id: str, user: dict = Depends(get_current_user), db: S
     if not world.get("is_public") and world.get("owner_id") != user["user_id"]:
         raise HTTPException(status_code=403, detail="Acesso negado")
     chars = (await db.table("roleplay_characters").select("*").eq("world_id", world_id).execute()).as_list()
-    bgs = (await db.table("roleplay_backgrounds").select("*").eq("world_id", world_id).execute()).as_list()
+    bgs   = (await db.table("roleplay_backgrounds").select("*").eq("world_id", world_id).execute()).as_list()
     return {**world, "characters": chars, "backgrounds": bgs}
 
 
 @app.post("/worlds", tags=["worlds"], status_code=201)
 async def create_world(body: CreateWorldRequest, user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
     raw = await db.table("roleplay_worlds").insert({
-        "owner_id": user["user_id"],
-        "title": body.title,
+        "owner_id":     user["user_id"],
+        "title":        body.title,
         "world_concept": body.world_concept,
-        "tone": body.tone,
+        "tone":         body.tone,
         "rules_of_world": body.rules_of_world,
-        "logo_url": body.logo_url,
-        "is_public": body.is_public,
+        "logo_url":     body.logo_url,
+        "is_public":    body.is_public,
     }).execute()
     rows = raw.as_list()
     if not rows:
@@ -116,9 +121,12 @@ async def update_world(world_id: str, body: CreateWorldRequest, user: dict = Dep
     if w["owner_id"] != user["user_id"]:
         raise HTTPException(status_code=403, detail="Apenas o criador pode editar")
     await db.table("roleplay_worlds").update({
-        "title": body.title, "world_concept": body.world_concept,
-        "tone": body.tone, "rules_of_world": body.rules_of_world,
-        "logo_url": body.logo_url, "is_public": body.is_public,
+        "title":         body.title,
+        "world_concept": body.world_concept,
+        "tone":          body.tone,
+        "rules_of_world": body.rules_of_world,
+        "logo_url":      body.logo_url,
+        "is_public":     body.is_public,
     }).eq("id", world_id).execute()
     return {"message": "World atualizado"}
 
@@ -144,9 +152,9 @@ async def add_character(world_id: str, body: CreateCharacterRequest, user: dict 
     if not w or w["owner_id"] != user["user_id"]:
         raise HTTPException(status_code=403, detail="Acesso negado")
     raw = await db.table("roleplay_characters").insert({
-        "world_id": world_id,
-        "name": body.name,
-        "image_url": body.image_url,
+        "world_id":        world_id,
+        "name":            body.name,
+        "image_url":       body.image_url,
         "personality_json": body.personality_json,
         "base_traits_json": body.base_traits_json,
     }).execute()
@@ -190,9 +198,9 @@ async def add_background(world_id: str, body: CreateBackgroundRequest, user: dic
     if not w or w["owner_id"] != user["user_id"]:
         raise HTTPException(status_code=403, detail="Acesso negado")
     raw = await db.table("roleplay_backgrounds").insert({
-        "world_id": world_id,
-        "name": body.name,
-        "image_url": body.image_url,
+        "world_id":    world_id,
+        "name":        body.name,
+        "image_url":   body.image_url,
         "description": body.description,
     }).execute()
     return raw.as_list()[0]
@@ -223,15 +231,18 @@ async def list_slots(user: dict = Depends(get_current_user), db: SupabaseClient 
     result = []
     for i in range(1, 6):
         if i in slot_map:
-            r = slot_map[i]
+            r  = slot_map[i]
             ws = r.get("world_state", {})
             result.append({
-                "slot_number": i, "occupied": True,
-                "id": r["id"], "title": r["title"],
-                "pack_id": r.get("pack_id"),
-                "player_name": r.get("player_name", "Protagonista"),
-                "created_at": r["created_at"], "last_played": r["last_played"],
-                "current_day": ws.get("current_day", 1),
+                "slot_number":  i,
+                "occupied":     True,
+                "id":           r["id"],
+                "title":        r["title"],
+                "pack_id":      r.get("pack_id"),
+                "player_name":  r.get("player_name", "Protagonista"),
+                "created_at":   r["created_at"],
+                "last_played":  r["last_played"],
+                "current_day":  ws.get("current_day", 1),
                 "current_phase": ws.get("current_phase", "morning"),
             })
         else:
@@ -253,31 +264,36 @@ async def create_slot(body: CreateSlotRequest, user: dict = Depends(get_current_
         if not pack.get("is_public") and pack.get("owner_id") != user["user_id"]:
             raise HTTPException(status_code=403, detail="Pack não disponível")
 
-    default_ws = WorldState()
+    default_ws  = WorldState()
     insert_data = {
-        "user_id": user["user_id"],
-        "slot_number": body.slot_number,
-        "title": body.title,
-        "player_name": body.player_name,
+        "user_id":            user["user_id"],
+        "slot_number":        body.slot_number,
+        "title":              body.title,
+        "player_name":        body.player_name,
         "player_description": body.player_description,
-        "world_state": default_ws.model_dump(),
-        "memory_summary": "",
-        "timeline": [],
+        "world_state":        default_ws.model_dump(),
+        "memory_summary":     "",
+        "timeline":           [],
     }
     if body.pack_id:
         insert_data["pack_id"] = body.pack_id
 
-    raw = await db.table("save_slots").insert(insert_data).execute()
-    rows = raw.as_list()
+    raw     = await db.table("save_slots").insert(insert_data).execute()
+    rows    = raw.as_list()
     slot_id = rows[0]["id"]
 
-    # Gera narração de abertura
+    # FIX: initialize_save agora retorna background_url também
     try:
         opening = await initialize_save(db, slot_id, user["user_id"])
     except Exception:
-        opening = {"narration": "A história começa aqui."}
+        opening = {"narration": "A história começa aqui.", "background_url": None}
 
-    return {"message": "Slot criado", "slot_id": slot_id, "opening": opening.get("narration", "")}
+    return {
+        "message":        "Slot criado",
+        "slot_id":        slot_id,
+        "opening":        opening.get("narration", ""),
+        "background_url": opening.get("background_url"),  # FIX: retorna URL do background de abertura
+    }
 
 
 @app.delete("/slots/{slot_number}", tags=["slots"])
@@ -322,7 +338,6 @@ class ActionRequest(BaseModel):
 async def player_action(slot_id: str, body: ActionRequest, user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
     try:
         result = await process_action(db=db, save_id=slot_id, user_id=user["user_id"], raw_input=body.input)
-        # FIX: Atualiza last_played a cada ação
         try:
             await db.table("save_slots").update({"last_played": "now()"}).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
         except Exception:
@@ -336,15 +351,34 @@ async def player_action(slot_id: str, body: ActionRequest, user: dict = Depends(
 
 @app.post("/slots/{slot_id}/advance", tags=["game"])
 async def advance_time(slot_id: str, user: dict = Depends(get_current_user), db: SupabaseClient = Depends(get_db)):
-    """Avança a fase do dia sem processar ação do jogador."""
+    """FIX: Avança fase com narração contextual da IA sobre o que aconteceu no intervalo."""
     try:
         result = await advance_phase(db=db, save_id=slot_id, user_id=user["user_id"])
-        # FIX: Atualiza last_played ao avançar fase também
         try:
             await db.table("save_slots").update({"last_played": "now()"}).eq("id", slot_id).eq("user_id", user["user_id"]).execute()
         except Exception:
             pass
         return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/slots/{slot_id}/npc-image", tags=["game"])
+async def update_npc_image(
+    slot_id: str,
+    body: NpcImageRequest,
+    user: dict = Depends(get_current_user),
+    db: SupabaseClient = Depends(get_db),
+):
+    """
+    FIX: Salva imagem customizada de NPC emergente no world_state do save.
+    Não promove o NPC ao Pack — apenas define a imagem para exibição em tela.
+    """
+    try:
+        return await set_npc_image(
+            db=db, save_id=slot_id, user_id=user["user_id"],
+            npc_name=body.npc_name, image_url=body.image_url,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -361,7 +395,6 @@ async def promote_npc_endpoint(slot_id: str, body: PromoteNPCRequest, user: dict
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# FIX: Removida rota duplicada de /world-state. Mantida apenas uma versão com Pydantic model correto.
 class PatchWorldStateRequest(BaseModel):
     world_state_patch: dict
 
@@ -378,7 +411,7 @@ async def patch_world_state(
     if not row:
         raise HTTPException(status_code=404, detail="Slot não encontrado")
 
-    ws = dict(row["world_state"])
+    ws      = dict(row["world_state"])
     allowed = {"sanity", "confidence", "violence", "social_status", "meta_awareness"}
     for key, val in body.world_state_patch.items():
         if key in allowed and isinstance(val, (int, float)):
