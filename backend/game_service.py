@@ -15,6 +15,7 @@ FIXES:
 - initialize_save retorna background_hint e ativa o background correto
 - promote_npc usa custom_image_url do emergent_npc se image_url não for fornecida
 - Novo set_npc_image para salvar imagem custom de NPC no world_state
+- BUG FIX #5: world_state_deltas agora tem clamp por stat para evitar ValidationError
 """
 
 from database import SupabaseClient
@@ -26,6 +27,15 @@ from ai_engine import (
 
 SUMMARIZE_EVERY = 10
 ARC_CHECK_EVERY = 7
+
+# BUG FIX #5: ranges válidos por stat — evita ValidationError quando a IA retorna valor fora do range
+STAT_RANGES = {
+    "sanity":        (0, 100),
+    "confidence":    (0, 100),
+    "violence":      (0, 100),
+    "social_status": (-100, 100),
+    "meta_awareness":(0, 100),
+}
 
 
 async def _get_slot(db: SupabaseClient, save_id: str, user_id: str) -> dict:
@@ -198,6 +208,7 @@ async def advance_phase(
     # Salva no banco
     await db.table("save_slots").update({
         "world_state": world_state.model_dump(),
+        "last_played": "now()",
     }).eq("id", save_id).eq("user_id", user_id).execute()
 
     # Loga o evento de sistema + a narração do skip
@@ -252,9 +263,7 @@ async def process_action(
     # 3. Carrega contexto do Pack
     pack, characters, backgrounds = await _get_pack_context(db, pack_id)
 
-    # 4. Eventos recentes — inclui eventos de sistema (time skips)
-    # Nota: last_time_skip já está no world_state se o jogador chamou advance_phase antes.
-    # A IA vai perceber isso no prompt e narrar as consequências. Após processar, limpamos.
+    # 4. Eventos recentes
     recent_result = await (
         db.table("events_log")
         .select("type, content, created_at")
@@ -265,7 +274,7 @@ async def process_action(
     )
     recent_events = list(reversed(recent_result.as_list()))
 
-    # 6. Chama IA — world_state ainda tem last_time_skip se veio de advance_phase
+    # 5. Chama IA — world_state ainda tem last_time_skip se veio de advance_phase
     ai_response: AIResponse = await call_narrator(
         action=action,
         world_state=world_state,
@@ -277,24 +286,27 @@ async def process_action(
         backgrounds=backgrounds,
     )
 
-    # 7. Limpa last_time_skip após a IA processar
+    # 6. Limpa last_time_skip após a IA processar
     world_state = world_state.clear_time_skip()
 
-    # 8. Aplica deltas de world_state
+    # 7. BUG FIX #5: Aplica deltas com clamp para evitar ValidationError
     state_dict = world_state.model_dump()
     if ai_response.world_state_deltas:
         for key, value in ai_response.world_state_deltas.items():
             if key in state_dict and isinstance(value, (int, float)):
+                if key in STAT_RANGES:
+                    lo, hi = STAT_RANGES[key]
+                    value = max(lo, min(hi, int(value)))
                 state_dict[key] = value
 
-    # 9. Atualiza relacionamentos
+    # 8. Atualiza relacionamentos
     if ai_response.relationship_updates:
         rels = dict(state_dict.get("relationships", {}))
         for name, info in ai_response.relationship_updates.items():
             rels[name] = info
         state_dict["relationships"] = rels
 
-    # 10. Processa NPCs emergentes
+    # 9. Processa NPCs emergentes
     emergent = dict(state_dict.get("emergent_npcs", {}))
     for npc_name, npc_data in (ai_response.emergent_npcs or {}).items():
         if npc_name in emergent:
@@ -310,44 +322,40 @@ async def process_action(
             emergent[npc_name] = {**npc_data, "mention_count": 1, "promoted": False}
     state_dict["emergent_npcs"] = emergent
 
-    # 11. Cena atual
+    # 10. Cena atual
     state_dict["scene_type"] = ai_response.scene_type
     if ai_response.background_hint:
         state_dict["current_background"] = ai_response.background_hint
     if ai_response.active_characters is not None:
         state_dict["active_characters"] = ai_response.active_characters
 
-    # 12. Contadores
+    # 11. Contadores
     state_dict["event_counter_global"] = state_dict["event_counter_global"] + 1
     state_dict["event_counter_arc"]    = state_dict["event_counter_arc"] + 1
     world_state = WorldState(**state_dict)
 
-    # 13. Loga eventos
+    # 12. Loga eventos
     await db.table("events_log").insert({
         "save_id": save_id,
         "type":    "player_action",
         "content": raw_input,
     }).execute()
 
-    # Se tem diálogo separado do personagem, salva narração + diálogo como eventos distintos
     speaker = ai_response.active_characters[0] if ai_response.active_characters else None
 
     if ai_response.character_dialogue and ai_response.scene_type == "character_focus" and speaker:
-        # Narração de contexto (ambiente, ações)
         if ai_response.narration:
             await db.table("events_log").insert({
                 "save_id": save_id,
                 "type":    "narration",
                 "content": ai_response.narration,
             }).execute()
-        # Diálogo direto com speaker embutido no content usando prefixo
         await db.table("events_log").insert({
             "save_id": save_id,
             "type":    "character_speech",
             "content": f"{speaker}||{ai_response.character_dialogue}",
         }).execute()
     elif ai_response.scene_type == "character_focus" and speaker:
-        # IA não separou o diálogo (modelo fraco ou falhou) — trata narration como fala do personagem
         await db.table("events_log").insert({
             "save_id": save_id,
             "type":    "character_speech",
@@ -360,7 +368,7 @@ async def process_action(
             "content": ai_response.narration,
         }).execute()
 
-    # 14. Análise de arcos
+    # 13. Análise de arcos
     if world_state.event_counter_arc % ARC_CHECK_EVERY == 0:
         arc_result = await (
             db.table("story_arcs").select("*")
@@ -370,7 +378,7 @@ async def process_action(
         arc_response = await call_arc_analyst(world_state, recent_events, active_arc)
         await _handle_arc_signal(db, save_id, world_state, arc_response, active_arc)
 
-    # 15. Sumarização periódica
+    # 14. Sumarização periódica
     if world_state.event_counter_global % SUMMARIZE_EVERY == 0:
         recent_result = await (
             db.table("events_log")
@@ -383,21 +391,20 @@ async def process_action(
         all_recent = list(reversed(recent_result.as_list()))
         memory_summary = await call_summarizer(memory_summary, all_recent)
 
-    # 16. Persiste slot
+    # 15. Persiste slot
     await db.table("save_slots").update({
-        "world_state":   world_state.model_dump(),
+        "world_state":    world_state.model_dump(),
         "memory_summary": memory_summary,
+        "last_played":    "now()",
     }).eq("id", save_id).eq("user_id", user_id).execute()
 
-    # 17. Resolve URLs para o frontend
+    # 16. Resolve URLs para o frontend
     bg_url = _resolve_bg_url(world_state.current_background, backgrounds)
-
-    # FIX: _resolve_scene agora passa world_state para pegar custom_image_url de NPCs
     scene_data = _resolve_scene(world_state, ai_response, characters)
 
     return {
         "narration":          ai_response.narration,
-        "character_dialogue": ai_response.character_dialogue,  # FIX: inclui diálogo separado
+        "character_dialogue": ai_response.character_dialogue,
         "world_state":        world_state.model_dump(),
         "current_day":        world_state.current_day,
         "current_phase":      world_state.current_phase,
@@ -416,10 +423,6 @@ async def set_npc_image(
     npc_name: str,
     image_url: str | None,
 ) -> dict:
-    """
-    FIX: Salva imagem customizada de NPC emergente no world_state.
-    Persiste no banco sem promover ao Pack.
-    """
     slot_row    = await _get_slot(db, save_id, user_id)
     world_state = WorldState(**slot_row["world_state"])
 
@@ -468,7 +471,9 @@ async def promote_npc(
     if not npc_data:
         raise ValueError(f"NPC '{npc_name}' não encontrado nos NPCs emergentes")
 
-    # FIX: usa custom_image_url do NPC se image_url não for fornecida
+    if isinstance(npc_data, dict) and npc_data.get("promoted"):
+        raise ValueError(f"NPC '{npc_name}' já foi promovido anteriormente")
+
     final_image_url = image_url or (npc_data.get("custom_image_url") if isinstance(npc_data, dict) else None)
 
     personality = {

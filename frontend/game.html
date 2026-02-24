@@ -1625,8 +1625,8 @@
           const lastSpeech = speeches[speeches.length - 1];
           const lastNarration = narrations[narrations.length - 1];
           // Pega o mais recente entre narração e diálogo
-          const lastNarIdx = lastNarration ? allEvents.lastIndexOf(allEvents.find(e => e === lastNarration)) : -1;
-          const lastSpIdx = lastSpeech ? allEvents.lastIndexOf(allEvents.find(e => e === lastSpeech)) : -1;
+          const lastNarIdx = lastNarration ? allEvents.lastIndexOf(lastNarration) : -1;
+          const lastSpIdx  = lastSpeech    ? allEvents.lastIndexOf(lastSpeech)    : -1;
           if (lastSpeech && lastSpIdx > lastNarIdx) {
             setNarration(lastSpeech.speaker || "???", lastSpeech.content, true);
           } else if (lastNarration) {
